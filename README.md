@@ -3,14 +3,14 @@
 MSR-VTT video captioning using CLIP + DINOv2 + VGGish multimodal fusion with LSTM decoder.
 
 ## Project Structure
-PROJECT/
-├── src/
-│   ├── data/           # data loading and preprocessing
-│   ├── models/         # encoder and decoder models
-│   └── training/       # training loops
-├── data/               # not tracked by git (too large)
-├── outputs/            # not tracked by git
-└── venv/               # not tracked by git
+PROJECT/ <br>
+├── src/<br>
+│   ├── data/           # data loading and preprocessing<br>
+│   ├── models/         # encoder and decoder models<br>
+│   └── training/       # training loops<br>
+├── data/               # not tracked by git <(too large)<br>
+├── outputs/            # not tracked by git<br>
+└── venv/               # not tracked by git<br>
 
 ## Setup
 ```bash
