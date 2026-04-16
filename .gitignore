@@ -1,0 +1,13 @@
+venv/
+/data/
+/outputs/
+__pycache__/
+*.pyc
+*.pyo
+*.pth
+*.npy
+*.wav
+*.mp4
+.DS_Store
+.vscode/
+.ipynb_checkpoints/
