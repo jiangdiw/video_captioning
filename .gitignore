@@ -1,6 +1,6 @@
 venv/
 /data/raw/
-/data/processed/visual/        # too large
+/data/processed/visual/
 /outputs/
 __pycache__/
 *.pyc
