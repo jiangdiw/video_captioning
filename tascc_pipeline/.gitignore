@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+videovenv/
+outputs/
+features/
+datas/
+data/processed/
+data/processed_full/
+*.DS_Store

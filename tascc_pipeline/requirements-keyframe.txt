@@ -1,0 +1,10 @@
+# Recommended Python version: 3.11 or 3.12.
+# PyTorch and Transformers support may lag behind Python 3.14.
+numpy>=1.26
+opencv-python>=4.10
+Pillow>=10.0
+torch>=2.3
+torchvision>=0.18
+transformers>=4.46
+tqdm>=4.66
+safetensors>=0.4
