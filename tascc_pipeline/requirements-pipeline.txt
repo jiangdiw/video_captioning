@@ -1,0 +1,12 @@
+numpy>=1.26
+pandas>=2.2
+matplotlib>=3.9
+opencv-python>=4.10
+Pillow>=10.0
+torch>=2.3
+torchvision>=0.18
+torchaudio>=2.3
+transformers>=4.46
+tqdm>=4.66
+safetensors>=0.4
+soundfile>=0.13
