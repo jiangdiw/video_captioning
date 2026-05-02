@@ -8,3 +8,7 @@ datas/
 data/processed/
 data/processed_full/
 *.DS_Store
+*.npy
+*.npz
+*.zip
+.claude/
