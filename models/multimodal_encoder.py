@@ -14,8 +14,14 @@ class Approach1Encoder(nn.Module):
         super().__init__()
         self.clip_proj  = nn.Linear(clip_dim,  d_model)
         self.dino_proj  = nn.Linear(dino_dim,  d_model)
+
+        self.clip_self_attn = nn.MultiheadAttention(
+            d_model, n_heads, batch_first=True)
+        self.clip_self_norm = nn.LayerNorm(d_model)
+
         self.cross_attn = nn.MultiheadAttention(
             d_model, n_heads, batch_first=True)
+
         self.norm        = nn.LayerNorm(d_model)
 
         self.encoder_dim = d_model              # sequence dim for attention
@@ -34,8 +40,11 @@ class Approach1Encoder(nn.Module):
         K = self.dino_proj(dino_emb)     # (B, 40, 512)
         V = K
 
+        clip_self_out, _ = self.clip_self_attn(Q, Q, Q)
+        Q = self.clip_self_norm(Q + clip_self_out)
+
         attn_out, _ = self.cross_attn(Q, K, V)
-        seq = self.norm(Q + attn_out)    # (B, 40, 512)
+        seq = self.norm(Q + attn_out)
 
         # For LSTM initialization: pool visual + audio
         visual_pooled = seq.mean(dim=1)            # (B, 512)
