@@ -26,13 +26,13 @@ class Approach1Encoder(nn.Module):
 
         self.encoder_dim = d_model  # sequence dim for cross-attention
 
-    def forward(self, clip_emb, dino_emb, audio_emb):
+    def forward(self, clip_emb, dino_emb, audio_emb=None):
         """
         clip_emb  : (B, 40, 512)
         dino_emb  : (B, 40, 768)
-        audio_emb : (B,  T, 128)
+        audio_emb : (B,  T, 128) or None — if None, audio is skipped
         returns:
-            seq : (B, 40+T, 512)  — visual frames followed by audio frames
+            seq : (B, 40+T, 512) with audio, or (B, 40, 512) without
         """
         Q = self.clip_proj(clip_emb)     # (B, 40, 512)
         K = self.dino_proj(dino_emb)     # (B, 40, 512)
@@ -44,10 +44,11 @@ class Approach1Encoder(nn.Module):
         attn_out, _ = self.cross_attn(Q, K, V)
         visual_seq = self.norm(Q + attn_out)          # (B, 40, 512)
 
-        audio_seq = self.audio_proj(audio_emb)        # (B,  T, 512)
-        seq = torch.cat([visual_seq, audio_seq], dim=1)  # (B, 40+T, 512)
+        if audio_emb is None:
+            return visual_seq                         # (B, 40, 512)
 
-        return seq
+        audio_seq = self.audio_proj(audio_emb)        # (B,  T, 512)
+        return torch.cat([visual_seq, audio_seq], dim=1)  # (B, 40+T, 512)
 
 
 # ================================================================
