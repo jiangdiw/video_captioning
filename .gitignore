@@ -12,3 +12,4 @@ data/processed_full/
 *.npz
 *.zip
 .claude/
+README_BART.md

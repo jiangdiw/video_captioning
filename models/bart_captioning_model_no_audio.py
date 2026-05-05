@@ -35,11 +35,8 @@ class BartCaptioningModelNoAudio(nn.Module):
                 p.requires_grad = True
 
     def _encode(self, clip_emb, dino_emb):
-        dummy_audio = torch.zeros(
-            clip_emb.size(0), 1, 128, device=clip_emb.device
-        )
-        seq = self.encoder(clip_emb, dino_emb, dummy_audio)  # (B, 40, 512)
-        return self.proj(seq)                                 # (B, 40, 768)
+        seq = self.encoder(clip_emb, dino_emb, audio_emb=None)  # (B, 40, 512)
+        return self.proj(seq)                                    # (B, 40, 768)
 
     def forward(self, clip_emb, dino_emb, decoder_input_ids=None, labels=None):
         """
