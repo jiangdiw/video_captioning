@@ -5,7 +5,8 @@ import torch.nn as nn
 # ================================================================
 # APPROACH 1
 # CLIP (Q) x DINOv2 (K/V) cross-attention
-# Returns sequence (B, 40, d_model) for BART decoder cross-attention
+# Audio projected to d_model and appended to visual sequence
+# Returns sequence (B, 40+T, d_model) for BART decoder cross-attention
 # ================================================================
 class Approach1Encoder(nn.Module):
     def __init__(self, clip_dim=512, dino_dim=768,
@@ -13,6 +14,7 @@ class Approach1Encoder(nn.Module):
         super().__init__()
         self.clip_proj  = nn.Linear(clip_dim,  d_model)
         self.dino_proj  = nn.Linear(dino_dim,  d_model)
+        self.audio_proj = nn.Linear(audio_dim, d_model)
 
         self.clip_self_attn = nn.MultiheadAttention(
             d_model, n_heads, batch_first=True)
@@ -28,9 +30,9 @@ class Approach1Encoder(nn.Module):
         """
         clip_emb  : (B, 40, 512)
         dino_emb  : (B, 40, 768)
-        audio_emb : (B,  T, 128)  unused — kept for consistent call signature
+        audio_emb : (B,  T, 128)
         returns:
-            seq : (B, 40, 512)
+            seq : (B, 40+T, 512)  — visual frames followed by audio frames
         """
         Q = self.clip_proj(clip_emb)     # (B, 40, 512)
         K = self.dino_proj(dino_emb)     # (B, 40, 512)
@@ -40,7 +42,10 @@ class Approach1Encoder(nn.Module):
         Q = self.clip_self_norm(Q + clip_self_out)
 
         attn_out, _ = self.cross_attn(Q, K, V)
-        seq = self.norm(Q + attn_out)    # (B, 40, 512)
+        visual_seq = self.norm(Q + attn_out)          # (B, 40, 512)
+
+        audio_seq = self.audio_proj(audio_emb)        # (B,  T, 512)
+        seq = torch.cat([visual_seq, audio_seq], dim=1)  # (B, 40+T, 512)
 
         return seq
 
@@ -58,6 +63,10 @@ class Approach2Encoder(nn.Module):
         self.clip_proj   = nn.Linear(clip_dim,  d_model)
         self.dino_proj   = nn.Linear(dino_dim,  d_model)
         self.audio_proj  = nn.Linear(audio_dim, d_model)
+
+        self.clip_self_attn = nn.MultiheadAttention(
+            d_model, n_heads, batch_first=True)
+        self.clip_self_norm = nn.LayerNorm(d_model)
 
         self.cross_attn1 = nn.MultiheadAttention(
             d_model, n_heads, batch_first=True)
@@ -81,12 +90,16 @@ class Approach2Encoder(nn.Module):
         dino_p  = self.dino_proj(dino_emb)      # (B, 40, 512)
         audio_p = self.audio_proj(audio_emb)    # (B,  T, 512)
 
+        # CLIP self-attention
+        clip_self_out, _ = self.clip_self_attn(clip_p, clip_p, clip_p)
+        clip_p = self.clip_self_norm(clip_p + clip_self_out)  # (B, 40, 512)
+
         # Stage 1: CLIP attends to DINOv2
         attn1, _     = self.cross_attn1(clip_p, dino_p, dino_p)
-        visual_fused = self.norm1(clip_p + attn1)            # (B, 40, 512)
+        visual_fused = self.norm1(clip_p + attn1)             # (B, 40, 512)
 
         # Stage 2: visual attends to Audio
         attn2, _ = self.cross_attn2(visual_fused, audio_p, audio_p)
-        seq = self.norm2(visual_fused + attn2)               # (B, 40, 512)
+        seq = self.norm2(visual_fused + attn2)                # (B, 40, 512)
 
         return seq

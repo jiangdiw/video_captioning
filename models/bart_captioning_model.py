@@ -37,8 +37,8 @@ class BartCaptioningModel(nn.Module):
 
     def _encode(self, clip_emb, dino_emb, audio_emb):
         """Returns encoder_hidden_states (B, 40, bart_d_model)."""
-        seq = self.encoder(clip_emb, dino_emb, audio_emb)  # (B, 40, 512)
-        return self.proj(seq)                               # (B, 40, 768)
+        seq = self.encoder(clip_emb, dino_emb, audio_emb)   # (B, 40, 512) — audio used via cross-attn
+        return self.proj(seq)                                # (B, 40, 768)
 
     def forward(self, clip_emb, dino_emb, audio_emb, decoder_input_ids=None, labels=None):
         """
