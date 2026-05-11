@@ -58,15 +58,15 @@ It is an orchestration notebook only. It does not reimplement the pipeline logic
   - Computes test-set metrics broken down by MSR-VTT category.
   - Also produces category plots and average train-duration diagnostics.
 
-- [run_ablation_suite.py](./run_ablation_suite.py)
+- [ablation/run_ablation_suite.py](./ablation/run_ablation_suite.py)
   - Orchestrates the BART ablation study workflow.
   - Runs decoder freeze-vs-trainable comparisons, modality ablations, and TASCC-vs-histogram comparisons.
 
-- [run_bart_experiment.py](./run_bart_experiment.py)
+- [ablation/run_bart_experiment.py](./ablation/run_bart_experiment.py)
   - Lower-level BART experiment runner used by the ablation suite.
   - Handles one experiment configuration at a time and writes metrics/checkpoints for that run.
 
-- [build_visual_ablation_features.py](./build_visual_ablation_features.py)
+- [ablation/build_visual_ablation_features.py](./ablation/build_visual_ablation_features.py)
   - Builds or reorganizes visual feature stores needed for ablation experiments.
 
 ### Data preparation scripts
@@ -181,6 +181,20 @@ It is an orchestration notebook only. It does not reimplement the pipeline logic
 
 - [PIPELINE_TRANSFER_FILES.md](./PIPELINE_TRANSFER_FILES.md)
   - Narrow manifest of files required when moving only the core pipeline into another repo.
+
+### `ablation/`
+
+- [ablation/__init__.py](./ablation/__init__.py)
+  - Marker module for the ablation workflow package.
+
+- [ablation/run_ablation_suite.py](./ablation/run_ablation_suite.py)
+  - Top-level ablation orchestrator.
+
+- [ablation/run_bart_experiment.py](./ablation/run_bart_experiment.py)
+  - Single-experiment BART runner used by the suite.
+
+- [ablation/build_visual_ablation_features.py](./ablation/build_visual_ablation_features.py)
+  - Visual feature builder for TASCC and histogram-topk ablation comparisons.
 
 ## Dataset Modes
 
@@ -437,7 +451,7 @@ python3 run_final_stable_tuning.py --device mps
 ### 9. Run ablations
 
 ```bash
-python3 run_ablation_suite.py \
+python3 ablation/run_ablation_suite.py \
   --resource-root . \
   --output-root outputs/ablation_suite_full \
   --device mps \

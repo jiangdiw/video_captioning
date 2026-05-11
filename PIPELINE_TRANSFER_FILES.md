@@ -10,9 +10,21 @@ This is the minimal file set for the new TASCC end-to-end pipeline. It excludes 
 - `requirements-tascc-macos.txt`
 - `prepro_tascc_feats.py`
 - `novel_keyframe_extractor.py`
+- `train_final_bart.py`
+- `run_final_stable_tuning.py`
+- `analyze_test_by_category.py`
 - `train_end_to_end.py`
 - `eval.py`
 - `visualize_tascc_keyframes.py`
+
+## `ablation/`
+
+Include these if you want the ablation workflow in the transferred repo:
+
+- `ablation/__init__.py`
+- `ablation/run_ablation_suite.py`
+- `ablation/run_bart_experiment.py`
+- `ablation/build_visual_ablation_features.py`
 
 ## `data/`
 
