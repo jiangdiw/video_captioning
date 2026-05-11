@@ -22,7 +22,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 from transformers import BartTokenizer
 
-from data.msrvtt import get_processed_layout, get_split_video_ids, normalize_dataset_mode
+from data.msrvtt import get_processed_layout, get_split_video_ids_from_captions, normalize_dataset_mode
 from models.bart_captioning_model_no_audio import BartCaptioningModelNoAudio
 
 
@@ -45,7 +45,7 @@ class BartMSRVTTDatasetNoAudio(Dataset):
         with open(layout.captions_root / f"{split}_captions.json") as f:
             self.captions = json.load(f)
 
-        split_ids = get_split_video_ids(dataset_mode)[split]
+        split_ids = get_split_video_ids_from_captions(layout.captions_root)[split]
         self.video_ids = [
             vid for vid in split_ids
             if (self.clip_dir / f"{vid}.npy").exists()

@@ -19,7 +19,7 @@ import numpy as np
 import torch
 from transformers import BartTokenizer
 
-from data.msrvtt import get_processed_layout, get_split_video_ids, normalize_dataset_mode
+from data.msrvtt import get_processed_layout, get_split_video_ids_from_captions, normalize_dataset_mode
 from models.bart_captioning_model import BartCaptioningModel
 
 
@@ -60,14 +60,15 @@ def main():
     with open(layout.captions_root / "val_captions.json") as f:
         captions = json.load(f)
 
-    val_ids = get_split_video_ids(args.dataset_mode)["val"]
+    val_ids = get_split_video_ids_from_captions(layout.captions_root)["val"]
     available = [v for v in val_ids if (clip_dir / f"{v}.npy").exists() and v in captions]
     sample = random.sample(available, min(args.n, len(available)))
 
     for vid in sample:
         clip, dino, audio = load_video(vid, clip_dir, dino_dir, audio_dir, device)
+        audio_mask = (audio.abs().sum(dim=-1) > 0).long()
         with torch.no_grad():
-            token_ids = model.generate(clip, dino, audio, max_new_tokens=40, num_beams=args.num_beams)
+            token_ids = model.generate(clip, dino, audio, audio_mask=audio_mask, max_new_tokens=40, num_beams=args.num_beams)
         generated = tokenizer.decode(token_ids[0], skip_special_tokens=True)
         gt = captions[vid][:3]
 

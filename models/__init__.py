@@ -4,4 +4,6 @@ from .captioning_model import (
     PrecomputedCaptioningModel,
     SequencePrecomputedCaptioningModel,
 )
+from .final_bart_captioning_model import FinalBartCaptioningModel
+from .flexible_bart_captioning_model import FlexibleBartCaptioningModel
 from .multimodal_encoder import Approach1Encoder, Approach2Encoder

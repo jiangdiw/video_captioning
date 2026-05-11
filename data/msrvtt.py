@@ -1,12 +1,23 @@
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_ROOT = PROJECT_ROOT / "data"
-DATASET_ROOT = PROJECT_ROOT / "dataset" / "MSR-VTT"
+RESOURCE_ROOT = Path(
+    os.environ.get("VIDEO_CAPTIONING_RESOURCE_ROOT", str(PROJECT_ROOT))
+).expanduser()
+DATA_ROOT = Path(
+    os.environ.get("VIDEO_CAPTIONING_DATA_ROOT", str(RESOURCE_ROOT / "data"))
+).expanduser()
+DATASET_ROOT = Path(
+    os.environ.get(
+        "VIDEO_CAPTIONING_DATASET_ROOT",
+        str(RESOURCE_ROOT / "dataset" / "MSR-VTT"),
+    )
+).expanduser()
 
 
 SUBSET_ALIASES = {"subset", "2500", "downsampled", "downsampled_2500"}
@@ -107,6 +118,18 @@ def get_split_video_ids(mode: str | None = None) -> dict[str, list[str]]:
         split_map[split].append(video["video_id"])
     for split in split_map:
         split_map[split] = sorted(split_map[split], key=video_number)
+    return split_map
+
+
+def get_split_video_ids_from_captions(captions_root: str | Path) -> dict[str, list[str]]:
+    captions_root = Path(captions_root)
+    split_map: dict[str, list[str]] = {}
+    for split in ["train", "val", "test"]:
+        path = captions_root / f"{split}_captions.json"
+        if not path.exists():
+            raise FileNotFoundError(f"Missing caption split file: {path}")
+        payload = json.loads(path.read_text())
+        split_map[split] = sorted(payload.keys(), key=video_number)
     return split_map
 
 

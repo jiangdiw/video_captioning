@@ -22,7 +22,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 from transformers import BartTokenizer
 
-from data.msrvtt import get_processed_layout, get_split_video_ids, normalize_dataset_mode
+from data.msrvtt import get_processed_layout, get_split_video_ids_from_captions, normalize_dataset_mode
 from models.bart_captioning_model import BartCaptioningModel
 
 
@@ -48,7 +48,7 @@ class BartMSRVTTDataset(Dataset):
         with open(layout.captions_root / f"{split}_captions.json") as f:
             self.captions = json.load(f)
 
-        split_ids = get_split_video_ids(dataset_mode)[split]
+        split_ids = get_split_video_ids_from_captions(layout.captions_root)[split]
         self.video_ids = [
             vid for vid in split_ids
             if (self.clip_dir / f"{vid}.npy").exists()
@@ -80,26 +80,29 @@ def collate_fn(batch, tokenizer, max_caption_len=40):
 
     max_t = max(a.shape[0] for a in audios)
     audio_pad = torch.zeros(len(audios), max_t, audios[0].shape[-1])
+    audio_mask = torch.zeros(len(audios), max_t, dtype=torch.long)
     for i, a in enumerate(audios):
         audio_pad[i, :a.shape[0]] = a
+        audio_mask[i, :a.shape[0]] = 1
 
     enc = tokenizer(list(captions), padding=True, truncation=True,
                     max_length=max_caption_len, return_tensors="pt")
     labels = enc["input_ids"].clone()
     labels[labels == tokenizer.pad_token_id] = -100
-    return clips, dinos, audio_pad, labels
+    return clips, dinos, audio_pad, audio_mask, labels
 
 
 def train_one_epoch(model, loader, optimizer, device):
     model.train()
     total_loss = 0.0
-    for clips, dinos, audios, labels in loader:
+    for clips, dinos, audios, audio_mask, labels in loader:
         clips  = clips.to(device)
         dinos  = dinos.to(device)
         audios = audios.to(device)
+        audio_mask = audio_mask.to(device)
         labels = labels.to(device)
         optimizer.zero_grad()
-        out = model(clips, dinos, audios, labels=labels)
+        out = model(clips, dinos, audios, audio_mask=audio_mask, labels=labels)
         out.loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
@@ -111,12 +114,13 @@ def train_one_epoch(model, loader, optimizer, device):
 def evaluate(model, loader, device):
     model.eval()
     total_loss = 0.0
-    for clips, dinos, audios, labels in loader:
+    for clips, dinos, audios, audio_mask, labels in loader:
         clips  = clips.to(device)
         dinos  = dinos.to(device)
         audios = audios.to(device)
+        audio_mask = audio_mask.to(device)
         labels = labels.to(device)
-        out = model(clips, dinos, audios, labels=labels)
+        out = model(clips, dinos, audios, audio_mask=audio_mask, labels=labels)
         total_loss += out.loss.item()
     return total_loss / len(loader)
 

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformers import BartForConditionalGeneration, BartTokenizer
+from transformers import BartForConditionalGeneration
 from transformers.modeling_outputs import BaseModelOutput
 
 from models.multimodal_encoder_40embedding import Approach1Encoder
@@ -35,12 +35,30 @@ class BartCaptioningModel(nn.Module):
             for p in self.bart.lm_head.parameters():
                 p.requires_grad = True
 
-    def _encode(self, clip_emb, dino_emb, audio_emb):
-        """Returns encoder_hidden_states (B, 40, bart_d_model)."""
-        seq = self.encoder(clip_emb, dino_emb, audio_emb)   # (B, 40, 512) — audio used via cross-attn
-        return self.proj(seq)                                # (B, 40, 768)
+    def _resolve_audio_mask(self, audio_emb, audio_mask=None):
+        if audio_emb is None:
+            return None
+        if audio_mask is not None:
+            return audio_mask.to(device=audio_emb.device, dtype=torch.long)
+        return (audio_emb.abs().sum(dim=-1) > 0).long()
 
-    def forward(self, clip_emb, dino_emb, audio_emb, decoder_input_ids=None, labels=None):
+    def _encode(self, clip_emb, dino_emb, audio_emb, audio_mask=None):
+        """Returns projected encoder sequence + attention mask."""
+        resolved_audio_mask = self._resolve_audio_mask(audio_emb, audio_mask)
+        seq = self.encoder(clip_emb, dino_emb, audio_emb, audio_mask=resolved_audio_mask)
+        encoder_hidden_states = self.proj(seq)
+
+        attention_mask = torch.ones(
+            encoder_hidden_states.shape[:2],
+            dtype=torch.long,
+            device=encoder_hidden_states.device,
+        )
+        visual_len = clip_emb.shape[1]
+        if resolved_audio_mask is not None:
+            attention_mask[:, visual_len:] = resolved_audio_mask
+        return encoder_hidden_states, attention_mask
+
+    def forward(self, clip_emb, dino_emb, audio_emb, audio_mask=None, decoder_input_ids=None, labels=None):
         """
         clip_emb          : (B, 40, 512)
         dino_emb          : (B, 40, 768)
@@ -49,15 +67,9 @@ class BartCaptioningModel(nn.Module):
         labels            : (B, seq_len)   — token ids with -100 for padding
         returns: transformers CausalLMOutputWithCrossAttentions
         """
-        encoder_hidden_states = self._encode(clip_emb, dino_emb, audio_emb)
-        attention_mask = torch.ones(
-            encoder_hidden_states.shape[:2],
-            dtype=torch.long,
-            device=encoder_hidden_states.device,
-        )
+        encoder_hidden_states, attention_mask = self._encode(clip_emb, dino_emb, audio_emb, audio_mask=audio_mask)
 
         return self.bart(
-            inputs_embeds=None,
             attention_mask=attention_mask,
             encoder_outputs=(encoder_hidden_states,),
             decoder_input_ids=decoder_input_ids,
@@ -65,17 +77,12 @@ class BartCaptioningModel(nn.Module):
         )
 
     @torch.no_grad()
-    def generate(self, clip_emb, dino_emb, audio_emb, max_new_tokens=40, **kwargs):
+    def generate(self, clip_emb, dino_emb, audio_emb, audio_mask=None, max_new_tokens=40, **kwargs):
         """
         Returns generated token id tensors (B, seq_len).
         Extra kwargs are forwarded to bart.generate (e.g. num_beams).
         """
-        encoder_hidden_states = self._encode(clip_emb, dino_emb, audio_emb)
-        attention_mask = torch.ones(
-            encoder_hidden_states.shape[:2],
-            dtype=torch.long,
-            device=encoder_hidden_states.device,
-        )
+        encoder_hidden_states, attention_mask = self._encode(clip_emb, dino_emb, audio_emb, audio_mask=audio_mask)
 
         return self.bart.generate(
             encoder_outputs=BaseModelOutput(last_hidden_state=encoder_hidden_states),
