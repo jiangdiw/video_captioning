@@ -5,9 +5,7 @@ This is the minimal file set for the new TASCC end-to-end pipeline. It excludes 
 ## Top-level files
 
 - `README.md`
-- `requirements-pipeline.txt`
-- `requirements-keyframe.txt`
-- `requirements-tascc-macos.txt`
+- `requirements.txt`
 - `prepro_tascc_feats.py`
 - `novel_keyframe_extractor.py`
 - `train_final_bart.py`

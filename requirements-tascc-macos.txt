@@ -1,3 +1,0 @@
--r requirements-keyframe.txt
-pandas>=2.2
-matplotlib>=3.9

@@ -170,14 +170,8 @@ It is an orchestration notebook only. It does not reimplement the pipeline logic
 - [prompt_banks/generic_caption_prompts.txt](./prompt_banks/generic_caption_prompts.txt)
   - Default prompt bank used by TASCC prompt-alignment scoring.
 
-- [requirements-pipeline.txt](./requirements-pipeline.txt)
-  - Python dependencies for the training/evaluation pipeline.
-
-- [requirements-keyframe.txt](./requirements-keyframe.txt)
-  - Python dependencies for TASCC and key-frame visualization.
-
-- [requirements-tascc-macos.txt](./requirements-tascc-macos.txt)
-  - Minimal macOS-specific requirements file kept from the earlier setup.
+- [requirements.txt](./requirements.txt)
+  - Single dependency file for the entire repository, including the notebook, TASCC, training, evaluation, and ablation workflows.
 
 - [PIPELINE_TRANSFER_FILES.md](./PIPELINE_TRANSFER_FILES.md)
   - Narrow manifest of files required when moving only the core pipeline into another repo.
@@ -238,8 +232,7 @@ In this repo, several of those are often symlinked to larger stores outside the 
 Install Python dependencies:
 
 ```bash
-pip install -r requirements-pipeline.txt
-pip install -r requirements-keyframe.txt
+pip install -r requirements.txt
 ```
 
 Audio extraction also requires:

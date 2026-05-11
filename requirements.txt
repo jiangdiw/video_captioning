@@ -1,3 +1,6 @@
+# Recommended Python version: 3.11 or 3.12.
+# PyTorch and Transformers support may lag behind the newest Python releases.
+
 numpy>=1.26
 pandas>=2.2
 matplotlib>=3.9
@@ -10,3 +13,4 @@ transformers>=4.46
 tqdm>=4.66
 safetensors>=0.4
 soundfile>=0.13
+notebook>=7.0
