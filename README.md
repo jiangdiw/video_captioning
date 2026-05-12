@@ -21,7 +21,7 @@ The recommended path for the final model is:
 
 If you want a notebook that runs the pipeline by calling the existing scripts, use:
 
-- [pipeline_runner.ipynb](./pipeline_runner.ipynb)
+- [full_pipeline.ipynb](./full_pipeline.ipynb)
 
 It is an orchestration notebook only. It does not reimplement the pipeline logic.
 
@@ -252,7 +252,7 @@ which ffprobe
 
 If you want a single document that drives the repo by calling the scripts:
 
-- [pipeline_runner.ipynb](./pipeline_runner.ipynb)
+- [full_pipeline.ipynb](./full_pipeline.ipynb)
 
 The notebook is designed to be run from the repo root and has:
 
@@ -505,6 +505,6 @@ If you want the most reliable current path:
 ## Notes
 
 - `train_final_bart.py` is the recommended training entrypoint.
-- `pipeline_runner.ipynb` is the recommended notebook entrypoint.
+- `full_pipeline.ipynb` is the recommended notebook entrypoint.
 - `train_end_to_end.py` and the older LSTM stack are still preserved, but they are not the preferred path for the final model.
 - `eval.py` remains in the repo for the older pipeline family.
