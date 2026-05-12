@@ -35,8 +35,14 @@ class BartCaptioningModelNoAudio(nn.Module):
                 p.requires_grad = True
 
     def _encode(self, clip_emb, dino_emb):
-        seq = self.encoder(clip_emb, dino_emb, audio_emb=None)  # (B, 40, 512)
-        return self.proj(seq)                                    # (B, 40, 768)
+        seq = self.encoder(clip_emb, dino_emb, audio_emb=None)   # (B, 40, 512)
+        encoder_hidden_states = self.proj(seq)                   # (B, 40, 768)
+        attention_mask = torch.ones(
+            encoder_hidden_states.shape[:2],
+            dtype=torch.long,
+            device=encoder_hidden_states.device,
+        )
+        return encoder_hidden_states, attention_mask
 
     def forward(self, clip_emb, dino_emb, decoder_input_ids=None, labels=None):
         """
@@ -44,12 +50,7 @@ class BartCaptioningModelNoAudio(nn.Module):
         dino_emb : (B, 40, 768)
         labels   : (B, seq_len) with -100 for padding
         """
-        encoder_hidden_states = self._encode(clip_emb, dino_emb)
-        attention_mask = torch.ones(
-            encoder_hidden_states.shape[:2],
-            dtype=torch.long,
-            device=encoder_hidden_states.device,
-        )
+        encoder_hidden_states, attention_mask = self._encode(clip_emb, dino_emb)
         return self.bart(
             attention_mask=attention_mask,
             encoder_outputs=(encoder_hidden_states,),
@@ -59,12 +60,7 @@ class BartCaptioningModelNoAudio(nn.Module):
 
     @torch.no_grad()
     def generate(self, clip_emb, dino_emb, max_new_tokens=40, **kwargs):
-        encoder_hidden_states = self._encode(clip_emb, dino_emb)
-        attention_mask = torch.ones(
-            encoder_hidden_states.shape[:2],
-            dtype=torch.long,
-            device=encoder_hidden_states.device,
-        )
+        encoder_hidden_states, attention_mask = self._encode(clip_emb, dino_emb)
         return self.bart.generate(
             encoder_outputs=BaseModelOutput(last_hidden_state=encoder_hidden_states),
             attention_mask=attention_mask,

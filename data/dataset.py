@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from data.msrvtt import get_processed_layout, get_split_video_ids, normalize_dataset_mode
+from data.msrvtt import get_processed_layout, get_split_video_ids_from_captions, normalize_dataset_mode
 
 
 def _resolve_layout(dataset_mode="subset", processed_root=None):
@@ -158,7 +158,7 @@ class MSRVTTDataset(Dataset):
         with open(cap_path) as f:
             self.captions = json.load(f)
 
-        split_ids = get_split_video_ids(self.dataset_mode)[split]
+        split_ids = get_split_video_ids_from_captions(layout["captions_root"])[split]
         self.video_ids = []
         for vid in split_ids:
             if (

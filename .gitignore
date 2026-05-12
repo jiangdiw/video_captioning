@@ -7,6 +7,12 @@ features/
 datas/
 data/processed/
 data/processed_full/
+data/processed
+data/processed_full
+dataset/MSR-VTT/TestVideo
+dataset/MSR-VTT/TrainValVideo
+dataset/MSR-VTT/full_dataset
+dataset/MSR-VTT/downsampled_2500_videos
 *.DS_Store
 *.npy
 *.npz

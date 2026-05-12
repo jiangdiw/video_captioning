@@ -8,6 +8,7 @@ class COCOScorer is taken from https://github.com/yaoli/arctic-capgen-vid
 import json
 import os
 import re
+import shutil
 import sys
 sys.path.append('coco-caption')
 
@@ -15,14 +16,19 @@ from pycocoevalcap.bleu.bleu import Bleu
 from pycocoevalcap.cider.cider import Cider
 from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
 
+JAVA_AVAILABLE = shutil.which("java") is not None
+
 try:
     from pycocoevalcap.rouge.rouge import Rouge
 except Exception:
     Rouge = None
 
-try:
-    from pycocoevalcap.meteor.meteor import Meteor
-except Exception:
+if JAVA_AVAILABLE:
+    try:
+        from pycocoevalcap.meteor.meteor import Meteor
+    except Exception:
+        Meteor = None
+else:
     Meteor = None
 # Define a context manager to suppress stdout and stderr.
 
@@ -83,11 +89,13 @@ class COCOScorer(object):
         if Meteor is not None:
             scorers.append((Meteor(), "METEOR"))
         else:
-            print('warning: METEOR scorer unavailable, skipping')
+            print('warning: METEOR scorer unavailable, using fallback implementation')
+            scorers.append((MeteorFallback(), "METEOR"))
         if Rouge is not None:
             scorers.append((Rouge(), "ROUGE_L"))
         else:
-            print('warning: ROUGE_L scorer unavailable, skipping')
+            print('warning: ROUGE_L scorer unavailable, using fallback implementation')
+            scorers.append((RougeFallback(), "ROUGE_L"))
         scorers.append((Cider(), "CIDEr"))
         #(Spice(), "SPICE")
 
@@ -128,6 +136,12 @@ def score(ref, sample):
     scorers = [(Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"])]
     if Rouge is not None:
         scorers.append((Rouge(), "ROUGE_L"))
+    else:
+        scorers.append((RougeFallback(), "ROUGE_L"))
+    if Meteor is not None:
+        scorers.append((Meteor(), "METEOR"))
+    else:
+        scorers.append((MeteorFallback(), "METEOR"))
     scorers.append((Cider(), "CIDEr"))
     final_scores = {}
     for scorer, method in scorers:
@@ -158,6 +172,98 @@ def simple_tokenize(data):
     return tokenized
 
 
+def lcs_length(a_tokens, b_tokens):
+    rows = len(a_tokens) + 1
+    cols = len(b_tokens) + 1
+    dp = [[0] * cols for _ in range(rows)]
+    for i in range(1, rows):
+        for j in range(1, cols):
+            if a_tokens[i - 1] == b_tokens[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    return dp[-1][-1]
+
+
+def meteor_alignment_stats(hyp_tokens, ref_tokens):
+    ref_positions = {}
+    for index, token in enumerate(ref_tokens):
+        ref_positions.setdefault(token, []).append(index)
+
+    used_ref_positions = set()
+    matches = []
+    for hyp_index, token in enumerate(hyp_tokens):
+        for ref_index in ref_positions.get(token, []):
+            if ref_index not in used_ref_positions:
+                used_ref_positions.add(ref_index)
+                matches.append((hyp_index, ref_index))
+                break
+
+    if not matches:
+        return 0, 0
+
+    matches.sort()
+    chunks = 1
+    for current, nxt in zip(matches, matches[1:]):
+        if not (nxt[0] == current[0] + 1 and nxt[1] == current[1] + 1):
+            chunks += 1
+    return len(matches), chunks
+
+
+class RougeFallback(object):
+    def method(self):
+        return "ROUGE_L"
+
+    def compute_score(self, gts, res):
+        image_scores = []
+        for image_id, hypotheses in res.items():
+            hyp = hypotheses[0] if hypotheses else ""
+            hyp_tokens = hyp.split()
+            best_score = 0.0
+            for ref in gts.get(image_id, []):
+                ref_tokens = ref.split()
+                if not hyp_tokens or not ref_tokens:
+                    continue
+                lcs = lcs_length(hyp_tokens, ref_tokens)
+                precision = lcs / max(len(hyp_tokens), 1)
+                recall = lcs / max(len(ref_tokens), 1)
+                if precision + recall == 0:
+                    score = 0.0
+                else:
+                    score = (2 * precision * recall) / (precision + recall)
+                best_score = max(best_score, score)
+            image_scores.append(best_score)
+        overall = sum(image_scores) / max(len(image_scores), 1)
+        return overall, image_scores
+
+
+class MeteorFallback(object):
+    def method(self):
+        return "METEOR"
+
+    def compute_score(self, gts, res):
+        image_scores = []
+        for image_id, hypotheses in res.items():
+            hyp = hypotheses[0] if hypotheses else ""
+            hyp_tokens = hyp.split()
+            best_score = 0.0
+            for ref in gts.get(image_id, []):
+                ref_tokens = ref.split()
+                matches, chunks = meteor_alignment_stats(hyp_tokens, ref_tokens)
+                if matches == 0:
+                    score = 0.0
+                else:
+                    precision = matches / max(len(hyp_tokens), 1)
+                    recall = matches / max(len(ref_tokens), 1)
+                    f_mean = (10 * precision * recall) / max(recall + 9 * precision, 1e-8)
+                    penalty = 0.5 * ((chunks / matches) ** 3)
+                    score = (1.0 - penalty) * f_mean
+                best_score = max(best_score, score)
+            image_scores.append(best_score)
+        overall = sum(image_scores) / max(len(image_scores), 1)
+        return overall, image_scores
+
+
 def tokenization_is_valid(original, tokenized):
     if len(original) != len(tokenized):
         return False
@@ -177,6 +283,8 @@ def tokenization_is_valid(original, tokenized):
 
 
 def safe_tokenize(data):
+    if shutil.which("java") is None:
+        return simple_tokenize(data)
     try:
         tokenized = PTBTokenizer().tokenize(data)
         if tokenization_is_valid(data, tokenized):

@@ -26,7 +26,7 @@ class Approach1Encoder(nn.Module):
 
         self.encoder_dim = d_model  # sequence dim for cross-attention
 
-    def forward(self, clip_emb, dino_emb, audio_emb=None):
+    def forward(self, clip_emb, dino_emb, audio_emb=None, audio_mask=None):
         """
         clip_emb  : (B, 40, 512)
         dino_emb  : (B, 40, 768)
@@ -48,6 +48,15 @@ class Approach1Encoder(nn.Module):
             return visual_seq                         # (B, 40, 512)
 
         audio_seq = self.audio_proj(audio_emb)        # (B,  T, 512)
+        if audio_mask is None:
+            audio_mask = torch.ones(
+                audio_emb.shape[:2],
+                dtype=audio_seq.dtype,
+                device=audio_seq.device,
+            )
+        else:
+            audio_mask = audio_mask.to(dtype=audio_seq.dtype, device=audio_seq.device)
+        audio_seq = audio_seq * audio_mask.unsqueeze(-1)
         return torch.cat([visual_seq, audio_seq], dim=1)  # (B, 40+T, 512)
 
 
