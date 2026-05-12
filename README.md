@@ -15,10 +15,18 @@ If you want a single entrypoint that calls the scripts for you, use:
 
 ## Setup
 
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
 Install Python dependencies:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 Install audio tooling:
@@ -54,8 +62,8 @@ The recommended final model is the stable BART pipeline on the full MSR-VTT data
 ### 1. Build processed captions and vocabulary
 
 ```bash
-python3 data/extract_captions.py --dataset-mode full
-python3 data/build_vocab.py --dataset-mode full
+python data/extract_captions.py --dataset-mode full
+python data/build_vocab.py --dataset-mode full
 ```
 
 If you want the balanced 2500-video subset instead, change `full` to `subset`.
@@ -65,7 +73,7 @@ If you want the balanced 2500-video subset instead, change `full` to `subset`.
 Train/val videos:
 
 ```bash
-python3 prepro_tascc_feats.py \
+python prepro_tascc_feats.py \
   --video-dir dataset/MSR-VTT/TrainValVideo \
   --video-list-json dataset/MSR-VTT/train_val_videodatainfo.json
 ```
@@ -73,7 +81,7 @@ python3 prepro_tascc_feats.py \
 Test videos:
 
 ```bash
-python3 prepro_tascc_feats.py \
+python prepro_tascc_feats.py \
   --video-dir dataset/MSR-VTT/TestVideo \
   --video-list-json dataset/MSR-VTT/test_videodatainfo.json
 ```
@@ -81,20 +89,20 @@ python3 prepro_tascc_feats.py \
 ### 3. Split fused features into CLIP and DINOv2 stores
 
 ```bash
-python3 data/split_visual_embeddings.py --dataset-mode full --fused-dir datas/feats/tascc_fused
+python data/split_visual_embeddings.py --dataset-mode full --fused-dir datas/feats/tascc_fused
 ```
 
 ### 4. Extract audio and VGGish features
 
 ```bash
-python3 data/extract_audio_wav.py --dataset-mode full
-python3 data/extract_vggish_embeddings.py --dataset-mode full
+python data/extract_audio_wav.py --dataset-mode full
+python data/extract_vggish_embeddings.py --dataset-mode full
 ```
 
 ### 5. Train the final model
 
 ```bash
-python3 train_final_bart.py \
+python train_final_bart.py \
   --architecture stable \
   --dataset-mode full \
   --modalities clip_dino_audio \
@@ -116,7 +124,7 @@ python3 train_final_bart.py \
 ### 6. Analyze test performance by category
 
 ```bash
-python3 analyze_test_by_category.py \
+python analyze_test_by_category.py \
   --predictions outputs/final_bart_full_stable_v1/test_predictions_xe.json \
   --train-dataset-mode full \
   --output-dir outputs/final_bart_full_stable_v1/category_breakdown_xe
@@ -127,7 +135,7 @@ python3 analyze_test_by_category.py \
 To run the ablation suite:
 
 ```bash
-python3 ablation/run_ablation_suite.py \
+python ablation/run_ablation_suite.py \
   --device mps \
   --epochs-full 20 \
   --epochs-subset 20 \
