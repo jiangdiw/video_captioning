@@ -11,7 +11,7 @@ This is the minimal file set for the new TASCC end-to-end pipeline. It excludes 
 - `train_final_bart.py`
 - `run_final_stable_tuning.py`
 - `analyze_test_by_category.py`
-- `train_end_to_end.py`
+- `train_lstm_decoder.py`
 - `eval.py`
 
 ## `ablation/`
