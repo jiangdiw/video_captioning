@@ -52,7 +52,10 @@ It also expects the actual videos to be available through the dataset paths used
 - [data/extract_audio_wav.py](./data/extract_audio_wav.py): extract WAV audio from videos
 - [data/extract_vggish_embeddings.py](./data/extract_vggish_embeddings.py): build VGGish audio embeddings
 - [train_final_bart.py](./train_final_bart.py): final recommended training entrypoint
+- [train_bart.py](./train_bart.py): legacy BART trainer with `--freeze-bart` and `--no-audio`
+- [train_lstm_decoder.py](./train_lstm_decoder.py): legacy LSTM decoder trainer
 - [analyze_test_by_category.py](./analyze_test_by_category.py): category-level test analysis
+- [misc/visualize_tascc_keyframes.py](./misc/visualize_tascc_keyframes.py): TASCC single-video visualization
 - [ablation/run_ablation_suite.py](./ablation/run_ablation_suite.py): ablation study runner
 
 ## Full Pipeline
