@@ -1294,7 +1294,7 @@ def main() -> int:
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "Missing dependency while sampling video frames. Install packages from "
-            "requirements-keyframe.txt before running the extractor."
+            "requirements.txt before running the extractor."
         ) from exc
     if not candidates:
         raise RuntimeError("No frames were sampled from the input video.")
@@ -1314,7 +1314,7 @@ def main() -> int:
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "Missing dependency while loading CLIP/DINOv2 components. Install packages "
-            "from requirements-keyframe.txt before running the extractor."
+            "from requirements.txt before running the extractor."
         ) from exc
 
     fused, similarity, importance, boundary_score = compute_semantic_scores(

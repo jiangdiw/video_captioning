@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def parse_args():
@@ -127,7 +127,7 @@ def ensure_visual_features(
 
     command = [
         sys.executable,
-        str(PROJECT_ROOT / "build_visual_ablation_features.py"),
+        str(PROJECT_ROOT / "ablation" / "build_visual_ablation_features.py"),
         "--resource-root",
         str(resource_root),
         "--dataset-mode",
@@ -198,7 +198,7 @@ def run_experiment(
 
     command = [
         sys.executable,
-        str(PROJECT_ROOT / "run_bart_experiment.py"),
+        str(PROJECT_ROOT / "ablation" / "run_bart_experiment.py"),
         "--resource-root",
         str(resource_root),
         "--dataset-mode",

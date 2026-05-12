@@ -1,4 +1,4 @@
-# src/training/train_end_to_end.py
+# src/training/train_lstm_decoder.py
 import argparse
 import sys
 from pathlib import Path
