@@ -1,15 +1,13 @@
 """
-Quick-start training script for BartCaptioningModel.
+Legacy quick-start training script for the older BART path.
 
-Usage:
-    # Sanity check (8 videos, 2 epochs)
-    python train_bart.py --debug
+This script now covers all four old variants:
+- audio + trainable BART
+- audio + frozen BART
+- no-audio + trainable BART
+- no-audio + frozen BART
 
-    # Full subset training
-    python train_bart.py --epochs 20 --batch-size 16
-
-    # Freeze BART, train encoder + projection only
-    python train_bart.py --freeze-bart --epochs 10
+Use `--no-audio` and `--freeze-bart` instead of separate duplicate scripts.
 """
 
 import argparse
@@ -30,6 +28,7 @@ from transformers import BartTokenizer
 
 from data.msrvtt import get_processed_layout, get_split_video_ids_from_captions, normalize_dataset_mode
 from models.bart_captioning_model import BartCaptioningModel
+from models.bart_captioning_model_no_audio import BartCaptioningModelNoAudio
 
 
 # ---------------------------------------------------------------------------
@@ -37,12 +36,13 @@ from models.bart_captioning_model import BartCaptioningModel
 # ---------------------------------------------------------------------------
 
 class BartMSRVTTDataset(Dataset):
-    """Loads raw CLIP / DINOv2 / VGGish files and tokenizes with BART tokenizer."""
+    """Loads raw CLIP / DINOv2 features and optional VGGish features."""
 
     def __init__(self, split, tokenizer, dataset_mode="subset",
-                 audio_dir=None, max_caption_len=40, debug_n=None):
+                 audio_dir=None, max_caption_len=40, debug_n=None, with_audio=True):
         self.tokenizer = tokenizer
         self.max_caption_len = max_caption_len
+        self.with_audio = with_audio
 
         dataset_mode = normalize_dataset_mode(dataset_mode)
         layout = get_processed_layout(dataset_mode)
@@ -75,15 +75,16 @@ class BartMSRVTTDataset(Dataset):
         vid = self.video_ids[idx]
         clip  = torch.tensor(np.load(self.clip_dir / f"{vid}.npy"), dtype=torch.float32)
         dino  = torch.tensor(np.load(self.dino_dir / f"{vid}.npy"), dtype=torch.float32)
+        caption = random.choice(self.captions[vid])
+        if not self.with_audio:
+            return clip, dino, caption
         audio_path = self.audio_dir / f"{vid}.npy"
         audio = torch.tensor(np.load(audio_path), dtype=torch.float32) if audio_path.exists() else torch.zeros(1, 128)
-        caption = random.choice(self.captions[vid])
         return clip, dino, audio, caption
 
 
-def collate_fn(batch, tokenizer, max_caption_len):
+def collate_fn_with_audio(batch, tokenizer, max_caption_len):
     clips, dinos, audios, captions = zip(*batch)
-
     clips = torch.stack(clips)   # (B, 40, 512)
     dinos = torch.stack(dinos)   # (B, 40, 768)
 
@@ -109,22 +110,49 @@ def collate_fn(batch, tokenizer, max_caption_len):
     return clips, dinos, audio_pad, audio_mask, labels
 
 
+def collate_fn_no_audio(batch, tokenizer, max_caption_len):
+    clips, dinos, captions = zip(*batch)
+    clips = torch.stack(clips)
+    dinos = torch.stack(dinos)
+
+    enc = tokenizer(
+        list(captions),
+        padding=True,
+        truncation=True,
+        max_length=max_caption_len,
+        return_tensors="pt",
+    )
+    labels = enc["input_ids"].clone()
+    labels[labels == tokenizer.pad_token_id] = -100
+    return clips, dinos, labels
+
+
 # ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
 
-def train_one_epoch(model, loader, optimizer, device):
+def train_one_epoch(model, loader, optimizer, device, with_audio):
     model.train()
     total_loss = 0.0
-    for clips, dinos, audios, audio_mask, labels in loader:
-        clips  = clips.to(device)
-        dinos  = dinos.to(device)
-        audios = audios.to(device)
-        audio_mask = audio_mask.to(device)
-        labels = labels.to(device)
+    for batch in loader:
+        if with_audio:
+            clips, dinos, audios, audio_mask, labels = batch
+            clips  = clips.to(device)
+            dinos  = dinos.to(device)
+            audios = audios.to(device)
+            audio_mask = audio_mask.to(device)
+            labels = labels.to(device)
+        else:
+            clips, dinos, labels = batch
+            clips = clips.to(device)
+            dinos = dinos.to(device)
+            labels = labels.to(device)
 
         optimizer.zero_grad()
-        out = model(clips, dinos, audios, audio_mask=audio_mask, decoder_input_ids=None, labels=labels)
+        if with_audio:
+            out = model(clips, dinos, audios, audio_mask=audio_mask, decoder_input_ids=None, labels=labels)
+        else:
+            out = model(clips, dinos, decoder_input_ids=None, labels=labels)
         out.loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
@@ -134,16 +162,24 @@ def train_one_epoch(model, loader, optimizer, device):
 
 
 @torch.no_grad()
-def evaluate(model, loader, device):
+def evaluate(model, loader, device, with_audio):
     model.eval()
     total_loss = 0.0
-    for clips, dinos, audios, audio_mask, labels in loader:
-        clips  = clips.to(device)
-        dinos  = dinos.to(device)
-        audios = audios.to(device)
-        audio_mask = audio_mask.to(device)
-        labels = labels.to(device)
-        out = model(clips, dinos, audios, audio_mask=audio_mask, decoder_input_ids=None, labels=labels)
+    for batch in loader:
+        if with_audio:
+            clips, dinos, audios, audio_mask, labels = batch
+            clips  = clips.to(device)
+            dinos  = dinos.to(device)
+            audios = audios.to(device)
+            audio_mask = audio_mask.to(device)
+            labels = labels.to(device)
+            out = model(clips, dinos, audios, audio_mask=audio_mask, decoder_input_ids=None, labels=labels)
+        else:
+            clips, dinos, labels = batch
+            clips = clips.to(device)
+            dinos = dinos.to(device)
+            labels = labels.to(device)
+            out = model(clips, dinos, decoder_input_ids=None, labels=labels)
         total_loss += out.loss.item()
     return total_loss / len(loader)
 
@@ -161,9 +197,10 @@ def parse_args():
     p.add_argument("--batch-size",   type=int,   default=16)
     p.add_argument("--lr",           type=float, default=1e-4)
     p.add_argument("--freeze-bart",  action="store_true")
+    p.add_argument("--no-audio",     action="store_true")
     p.add_argument("--debug",        action="store_true",
                    help="Use 8 videos per split for a quick sanity check")
-    p.add_argument("--out-dir",      default="outputs/bart_checkpoints")
+    p.add_argument("--out-dir",      default=None)
     return p.parse_args()
 
 
@@ -173,23 +210,27 @@ def main():
     print(f"Device: {device}")
 
     tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+    with_audio = not args.no_audio
 
     debug_n = 8 if args.debug else None
 
     train_ds = BartMSRVTTDataset("train", tokenizer, args.dataset_mode,
-                                  audio_dir=args.audio_dir, debug_n=debug_n)
+                                  audio_dir=args.audio_dir, debug_n=debug_n, with_audio=with_audio)
     val_ds   = BartMSRVTTDataset("val",   tokenizer, args.dataset_mode,
-                                  audio_dir=args.audio_dir, debug_n=debug_n)
+                                  audio_dir=args.audio_dir, debug_n=debug_n, with_audio=with_audio)
 
     def collate(b):
-        return collate_fn(b, tokenizer, max_caption_len=40)
+        if with_audio:
+            return collate_fn_with_audio(b, tokenizer, max_caption_len=40)
+        return collate_fn_no_audio(b, tokenizer, max_caption_len=40)
 
     train_loader = DataLoader(train_ds, batch_size=args.batch_size,
                               shuffle=True,  collate_fn=collate, num_workers=0)
     val_loader   = DataLoader(val_ds,   batch_size=args.batch_size,
                               shuffle=False, collate_fn=collate, num_workers=0)
 
-    model = BartCaptioningModel(freeze_bart=args.freeze_bart).to(device)
+    model_cls = BartCaptioningModel if with_audio else BartCaptioningModelNoAudio
+    model = model_cls(freeze_bart=args.freeze_bart).to(device)
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total     = sum(p.numel() for p in model.parameters())
     print(f"Parameters: {trainable:,} trainable / {total:,} total")
@@ -198,13 +239,25 @@ def main():
         filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr
     )
 
+    if args.out_dir is None:
+        if with_audio:
+            args.out_dir = (
+                "outputs/bart_frozen_decoder_checkpoints"
+                if args.freeze_bart else "outputs/bart_checkpoints"
+            )
+        else:
+            args.out_dir = (
+                "outputs/bart_no_audio_frozen_decoder_checkpoints"
+                if args.freeze_bart else "outputs/bart_no_audio_checkpoints"
+            )
+
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     best_val = float("inf")
     for epoch in range(1, args.epochs + 1):
-        train_loss = train_one_epoch(model, train_loader, optimizer, device)
-        val_loss   = evaluate(model, val_loader, device)
+        train_loss = train_one_epoch(model, train_loader, optimizer, device, with_audio=with_audio)
+        val_loss   = evaluate(model, val_loader, device, with_audio=with_audio)
         print(f"Epoch {epoch:3d}  train={train_loss:.4f}  val={val_loss:.4f}")
 
         if val_loss < best_val:

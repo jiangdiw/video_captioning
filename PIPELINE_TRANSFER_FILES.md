@@ -13,7 +13,6 @@ This is the minimal file set for the new TASCC end-to-end pipeline. It excludes 
 - `analyze_test_by_category.py`
 - `train_end_to_end.py`
 - `eval.py`
-- `visualize_tascc_keyframes.py`
 
 ## `ablation/`
 
@@ -48,6 +47,7 @@ Include these if you want the ablation workflow in the transferred repo:
 ## `misc/`
 
 - `misc/cocoeval.py`
+- `misc/visualize_tascc_keyframes.py`
 
 ## `coco-caption/`
 
