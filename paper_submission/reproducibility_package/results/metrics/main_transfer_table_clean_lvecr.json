@@ -1,0 +1,90 @@
+[
+  {
+    "method": "0-shot source only",
+    "Bleu_1": 0.3702,
+    "Bleu_2": 0.1472,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.1367,
+    "ROUGE_L": 0.2009,
+    "CIDEr": 0.0491,
+    "note": "Manuscript rounded row; full source metrics are packaged separately."
+  },
+  {
+    "method": "10-shot direct",
+    "Bleu_1": 0.4389,
+    "Bleu_2": 0.1857,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.1975,
+    "ROUGE_L": 0.271,
+    "CIDEr": 0.0921,
+    "note": "Manuscript rounded row."
+  },
+  {
+    "method": "20-shot direct",
+    "Bleu_1": 0.4591,
+    "Bleu_2": 0.2027,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.1926,
+    "ROUGE_L": 0.2652,
+    "CIDEr": 0.1031,
+    "note": "Manuscript rounded row."
+  },
+  {
+    "method": "30-shot direct",
+    "Bleu_1": 0.464,
+    "Bleu_2": 0.2141,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.1786,
+    "ROUGE_L": 0.2689,
+    "CIDEr": 0.0804,
+    "note": "Manuscript rounded row."
+  },
+  {
+    "method": "74-shot adaptive120 direct",
+    "Bleu_1": 0.6224,
+    "Bleu_2": 0.3624,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.279,
+    "ROUGE_L": 0.3336,
+    "CIDEr": 0.1477,
+    "note": "Rounded from the packaged adaptive120 direct metrics."
+  },
+  {
+    "method": "Clean adapted model-score baseline",
+    "Bleu_1": 0.5962,
+    "Bleu_2": 0.3324,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.2744,
+    "ROUGE_L": 0.3232,
+    "CIDEr": 0.1374,
+    "note": "Rounded from the clean LV-ECR summary baseline metrics."
+  },
+  {
+    "method": "LV-ECR (adaptive visual+support)",
+    "Bleu_1": 0.6009,
+    "Bleu_2": 0.344,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.2885,
+    "ROUGE_L": 0.3198,
+    "CIDEr": 0.1521,
+    "note": "Rounded from the clean LV-ECR summary metrics."
+  },
+  {
+    "method": "LV-ECR candidate-pool oracle",
+    "Bleu_1": 0.7815,
+    "Bleu_2": 0.5055,
+    "Bleu_3": null,
+    "Bleu_4": null,
+    "METEOR": 0.3776,
+    "ROUGE_L": 0.4204,
+    "CIDEr": 0.3205,
+    "note": "Rounded from the clean LV-ECR diagnostic oracle metrics."
+  }
+]

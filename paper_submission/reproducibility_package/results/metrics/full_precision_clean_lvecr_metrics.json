@@ -1,0 +1,57 @@
+[
+  {
+    "method": "source_zero_shot",
+    "Bleu_1": 0.37021276595587144,
+    "Bleu_2": 0.1472107033398012,
+    "Bleu_3": 0.06279960432577608,
+    "Bleu_4": 0.000006428737309455248,
+    "METEOR": 0.1366696931319514,
+    "ROUGE_L": 0.20089817359727682,
+    "CIDEr": 0.04906244901291866,
+    "note": "Full-precision source metrics from the executable run."
+  },
+  {
+    "method": "adaptive120_direct",
+    "Bleu_1": 0.62244082278025,
+    "Bleu_2": 0.3624328119323261,
+    "Bleu_3": 0.1978463434382336,
+    "Bleu_4": 0.00001645856278473191,
+    "METEOR": 0.2790270726044739,
+    "ROUGE_L": 0.33361953406071054,
+    "CIDEr": 0.14765811533860773,
+    "note": "Full-precision direct-transfer metrics from finecap20_nr2."
+  },
+  {
+    "method": "clean_modelscore_baseline",
+    "Bleu_1": 0.5961538461509801,
+    "Bleu_2": 0.3324498519492491,
+    "Bleu_3": 0.173551965891537,
+    "Bleu_4": 0.000014507803052124038,
+    "METEOR": 0.27437552447689495,
+    "ROUGE_L": 0.32315263683684736,
+    "CIDEr": 0.13744177764881674,
+    "note": "Full-precision clean baseline metrics from the LV-ECR summary."
+  },
+  {
+    "method": "lvecr",
+    "Bleu_1": 0.6008968609838525,
+    "Bleu_2": 0.3439640955873193,
+    "Bleu_3": 0.19986823066632892,
+    "Bleu_4": 0.10467727649473094,
+    "METEOR": 0.28852490162181393,
+    "ROUGE_L": 0.31982645321654607,
+    "CIDEr": 0.15210421290642032,
+    "note": "Full-precision clean LV-ECR metrics."
+  },
+  {
+    "method": "lvecr_candidate_pool_oracle",
+    "Bleu_1": 0.7815126050387332,
+    "Bleu_2": 0.5054646431672583,
+    "Bleu_3": 0.31121483141584844,
+    "Bleu_4": 0.15722083524512537,
+    "METEOR": 0.377584870468867,
+    "ROUGE_L": 0.42035067873303167,
+    "CIDEr": 0.32048214544191284,
+    "note": "Full-precision diagnostic oracle metrics."
+  }
+]

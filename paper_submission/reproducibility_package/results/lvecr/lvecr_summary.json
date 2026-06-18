@@ -1,0 +1,1475 @@
+{
+  "method": "long-video evidence-calibrated reranker",
+  "method_short_name": "LV-ECR",
+  "proposals_json": "<DATTALION_WORKSPACE>/runs_clean/transfer_arch_search_20260610/adaptive_blip_keyframe_proposals.json",
+  "proposal_method": "adaptive TASCC keyframe BLIP proposal branch",
+  "candidate_sources": "bart_blip_summary",
+  "grid_constraints": {
+    "min_visual_weight": 0.5,
+    "min_support_weight": 0.25,
+    "num_weight_settings": 1920
+  },
+  "rank_source_note": "Clean: BART beam order is recomputed from model generation scores; stored CIDEr order is not used.",
+  "dev_splits": [
+    "train",
+    "val"
+  ],
+  "best_weights": {
+    "model": 2.0,
+    "rank": 0.05,
+    "visual": 0.5,
+    "support": 0.25,
+    "lexical": 0.2,
+    "domain": 0.0,
+    "source": 1.0,
+    "length": 0.05,
+    "repeat": 0.2,
+    "bad": 1.0,
+    "switch_margin": 0.0
+  },
+  "dev_baseline_metrics": {
+    "Bleu_1": 0.7490493555451554,
+    "Bleu_2": 0.4399182943388635,
+    "Bleu_3": 0.20837355732978086,
+    "Bleu_4": 0.09770416741259003,
+    "METEOR": 0.293135646591407,
+    "ROUGE_L": 0.3769584266864231,
+    "CIDEr": 0.1436831932883894
+  },
+  "dev_metrics": {
+    "Bleu_1": 0.7660104578727158,
+    "Bleu_2": 0.4454847915462064,
+    "Bleu_3": 0.21634482343801378,
+    "Bleu_4": 0.09987323267596375,
+    "METEOR": 0.29731284064424185,
+    "ROUGE_L": 0.37320051510564556,
+    "CIDEr": 0.1448633922362982
+  },
+  "dev_oracle_metrics": {
+    "Bleu_1": 0.8219891047692918,
+    "Bleu_2": 0.5439150428643827,
+    "Bleu_3": 0.3162615630145116,
+    "Bleu_4": 0.1757917616671238,
+    "METEOR": 0.3555623097869092,
+    "ROUGE_L": 0.41448068051033266,
+    "CIDEr": 0.22965930126624837
+  },
+  "dev_cider_gain_vs_clean_baseline": 0.0011801989479088004,
+  "dev_switches": [
+    {
+      "video_id": "video10030",
+      "source": "bart",
+      "baseline_caption": "people walk through debris and debris",
+      "selected_caption": "people walk through damaged building",
+      "baseline_sentence_cider": 0.14442269799423105,
+      "selected_sentence_cider": 0.14702266592190155,
+      "sentence_cider_delta": 0.0025999679276705046,
+      "features": {
+        "model_rel": -0.2209070920944214,
+        "model_rank_penalty": -3.0,
+        "visual_alignment": 0.7000372013924212,
+        "evidence_support": 4.618802153517007,
+        "target_lexical": 3.7174579994127828,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10031",
+      "source": "bart",
+      "baseline_caption": "smoke billows from burning building",
+      "selected_caption": "smoke billows from burning vehicle",
+      "baseline_sentence_cider": 0.10372077422670803,
+      "selected_sentence_cider": 0.08017526159791447,
+      "sentence_cider_delta": -0.023545512628793563,
+      "features": {
+        "model_rel": -0.09298765659332275,
+        "model_rank_penalty": -6.0,
+        "visual_alignment": 1.2742945227113884,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 5.194909724214192,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10032",
+      "source": "bart",
+      "baseline_caption": "firefighters battle flames and smoke",
+      "selected_caption": "firefighters extinguish fire with hose",
+      "baseline_sentence_cider": 0.16954144822934725,
+      "selected_sentence_cider": 0.1133996596366061,
+      "sentence_cider_delta": -0.056141788592741146,
+      "features": {
+        "model_rel": -0.019033730030059814,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.8043339635996979,
+        "evidence_support": 2.82842712474619,
+        "target_lexical": 5.0180602590690535,
+        "domain_count": 2.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10037",
+      "source": "bart",
+      "baseline_caption": "fire and smoke billows from building",
+      "selected_caption": "smoke billows from building as fire spreads",
+      "baseline_sentence_cider": 0.2026499286445797,
+      "selected_sentence_cider": 0.2803754943388208,
+      "sentence_cider_delta": 0.0777255656942411,
+      "features": {
+        "model_rel": -0.002924680709838867,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 1.115007707372465,
+        "evidence_support": 3.464101615137755,
+        "target_lexical": 5.46120348863042,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10038",
+      "source": "bart",
+      "baseline_caption": "emergency workers repair damaged vehicles",
+      "selected_caption": "emergency workers repair damaged buildings",
+      "baseline_sentence_cider": 0.18980517996086443,
+      "selected_sentence_cider": 0.15049448503021765,
+      "sentence_cider_delta": -0.03931069493064679,
+      "features": {
+        "model_rel": -0.0004798769950866699,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.503125,
+        "evidence_support": 3.5,
+        "target_lexical": 4.691830217261284,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10040",
+      "source": "bart",
+      "baseline_caption": "firefighters work through smoke and debris",
+      "selected_caption": "firefighters battle smoke and flames",
+      "baseline_sentence_cider": 0.14305788967438365,
+      "selected_sentence_cider": 0.048271536491341416,
+      "sentence_cider_delta": -0.09478635318304224,
+      "features": {
+        "model_rel": -0.013973355293273926,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.3340383700311407,
+        "evidence_support": 1.7320508075688774,
+        "target_lexical": 4.60303214866142,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10042",
+      "source": "bart",
+      "baseline_caption": "workers walk through rubble and debris",
+      "selected_caption": "construction workers walk through rubble and debris",
+      "baseline_sentence_cider": 0.09261415608498486,
+      "selected_sentence_cider": 0.15198527166263215,
+      "sentence_cider_delta": 0.05937111557764729,
+      "features": {
+        "model_rel": -0.04386448860168457,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.565685424949238,
+        "evidence_support": 2.82842712474619,
+        "target_lexical": 5.018234065938169,
+        "domain_count": 2.5,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10045",
+      "source": "bart",
+      "baseline_caption": "interior shows broken windows and damaged buildings",
+      "selected_caption": "people talk about broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.194853381328764,
+      "selected_sentence_cider": 0.11320629710411334,
+      "sentence_cider_delta": -0.08164708422465067,
+      "features": {
+        "model_rel": -0.08836013078689575,
+        "model_rank_penalty": -3.0,
+        "visual_alignment": 0.690625,
+        "evidence_support": 4.5,
+        "target_lexical": 5.262649252988432,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10047",
+      "source": "bart",
+      "baseline_caption": "construction crew removes debris from roof",
+      "selected_caption": "construction crew removes debris from roof of building",
+      "baseline_sentence_cider": 0.12651177172556885,
+      "selected_sentence_cider": 0.13556146398062946,
+      "sentence_cider_delta": 0.00904969225506061,
+      "features": {
+        "model_rel": -0.11394912004470825,
+        "model_rank_penalty": -5.0,
+        "visual_alignment": 0.7071067811865475,
+        "evidence_support": 2.1213203435596424,
+        "target_lexical": 5.700032778405936,
+        "domain_count": 2.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10050",
+      "source": "bart",
+      "baseline_caption": "damaged buildings surrounded by rubble and debris",
+      "selected_caption": "damaged buildings surrounded by broken glass and debris",
+      "baseline_sentence_cider": 0.06077007078059542,
+      "selected_sentence_cider": 0.0958687007220861,
+      "sentence_cider_delta": 0.03509862994149068,
+      "features": {
+        "model_rel": -0.001321554183959961,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 1.0071428571428573,
+        "evidence_support": 3.5,
+        "target_lexical": 4.8303545171591695,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10053",
+      "source": "bart",
+      "baseline_caption": "construction workers remove debris from damaged building",
+      "selected_caption": "construction crews remove debris from damaged building",
+      "baseline_sentence_cider": 0.20321212945713288,
+      "selected_sentence_cider": 0.2021343543458823,
+      "sentence_cider_delta": -0.0010777751112505674,
+      "features": {
+        "model_rel": -0.027646243572235107,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.9295339333952976,
+        "evidence_support": 3.464101615137755,
+        "target_lexical": 4.963856624489337,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10054",
+      "source": "bart",
+      "baseline_caption": "woman walks through damaged building with broken windows",
+      "selected_caption": "woman walks through damaged building with broken glass",
+      "baseline_sentence_cider": 0.296296013237423,
+      "selected_sentence_cider": 0.26794565465136333,
+      "sentence_cider_delta": -0.028350358586059665,
+      "features": {
+        "model_rel": -0.0012954473495483398,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.734375,
+        "evidence_support": 4.5,
+        "target_lexical": 5.4639178846365635,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10059",
+      "source": "bart",
+      "baseline_caption": "firefighters respond to emergency with fire and smoke",
+      "selected_caption": "firefighters respond to burning buildings with heavy equipment",
+      "baseline_sentence_cider": 0.1617299351448554,
+      "selected_sentence_cider": 0.07524078394313871,
+      "sentence_cider_delta": -0.08648915120171669,
+      "features": {
+        "model_rel": -0.030659198760986328,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.8443747686898276,
+        "evidence_support": 4.618802153517007,
+        "target_lexical": 6.143257130433773,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10060",
+      "source": "bart",
+      "baseline_caption": "emergency responders remove injured person from stretcher",
+      "selected_caption": "emergency responders remove injured person from vehicle",
+      "baseline_sentence_cider": 0.21776626479236222,
+      "selected_sentence_cider": 0.20853357855817353,
+      "sentence_cider_delta": -0.009232686234188686,
+      "features": {
+        "model_rel": -0.033260881900787354,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.7938566201357354,
+        "evidence_support": 3.464101615137755,
+        "target_lexical": 6.065951472797801,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10064",
+      "source": "bart",
+      "baseline_caption": "firefighters rescue people from damaged building",
+      "selected_caption": "firefighters rescue people from burning building",
+      "baseline_sentence_cider": 0.1497195766229661,
+      "selected_sentence_cider": 0.12497482508787841,
+      "sentence_cider_delta": -0.024744751535087678,
+      "features": {
+        "model_rel": -0.019100189208984375,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.6903859880530601,
+        "evidence_support": 4.024922359499621,
+        "target_lexical": 4.522432693838878,
+        "domain_count": 5.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10068",
+      "source": "bart",
+      "baseline_caption": "interior shows broken bones and broken windows",
+      "selected_caption": "interior shows broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.006316481800169287,
+      "selected_sentence_cider": 0.04892808269962321,
+      "sentence_cider_delta": 0.04261160089945393,
+      "features": {
+        "model_rel": -0.0072144269943237305,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.7758144242235596,
+        "evidence_support": 4.618802153517007,
+        "target_lexical": 4.091774613283299,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10071",
+      "source": "bart",
+      "baseline_caption": "smoke billows from damaged building",
+      "selected_caption": "smoke billows from burning building",
+      "baseline_sentence_cider": 0.1472295355329711,
+      "selected_sentence_cider": 0.1770238753658088,
+      "sentence_cider_delta": 0.02979433983283769,
+      "features": {
+        "model_rel": -0.008984804153442383,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.5556996340950149,
+        "evidence_support": 2.886751345948129,
+        "target_lexical": 4.561178534444592,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10074",
+      "source": "bart",
+      "baseline_caption": "soldiers talk about destruction and destruction",
+      "selected_caption": "damaged buildings surrounded by debris",
+      "baseline_sentence_cider": 0.027509437502055416,
+      "selected_sentence_cider": 0.018828468667078123,
+      "sentence_cider_delta": -0.008680968834977293,
+      "features": {
+        "model_rel": -0.09073376655578613,
+        "model_rank_penalty": -3.0,
+        "visual_alignment": 0.7752989329117832,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 3.8592105765668783,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10075",
+      "source": "bart",
+      "baseline_caption": "damaged buildings surrounded by rubble and rubble",
+      "selected_caption": "damaged buildings surrounded by rubble and debris",
+      "baseline_sentence_cider": 0.06689874509083785,
+      "selected_sentence_cider": 0.08168529130229446,
+      "sentence_cider_delta": 0.014786546211456614,
+      "features": {
+        "model_rel": -0.0019135475158691406,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.9454110657980124,
+        "evidence_support": 4.618802153517007,
+        "target_lexical": 4.2841210852955545,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10077",
+      "source": "bart",
+      "baseline_caption": "interior shows broken windows and damaged buildings",
+      "selected_caption": "people talk about damaged buildings and damage",
+      "baseline_sentence_cider": 0.1149260436960927,
+      "selected_sentence_cider": 0.11181443895585913,
+      "sentence_cider_delta": -0.003111604740233573,
+      "features": {
+        "model_rel": -0.03775131702423096,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.8443747686898276,
+        "evidence_support": 4.618802153517007,
+        "target_lexical": 4.965138849066205,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10079",
+      "source": "bart",
+      "baseline_caption": "damaged buildings surrounded by rubble and debris",
+      "selected_caption": "damaged buildings surrounded by broken glass and debris",
+      "baseline_sentence_cider": 0.09761652079363833,
+      "selected_sentence_cider": 0.0778088022666457,
+      "sentence_cider_delta": -0.019807718526992632,
+      "features": {
+        "model_rel": -0.0841209888458252,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 1.2593750000000001,
+        "evidence_support": 5.0,
+        "target_lexical": 4.8303545171591695,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10080",
+      "source": "bart",
+      "baseline_caption": "interior shows broken windows and broken walls",
+      "selected_caption": "interior shows broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.07138066500543776,
+      "selected_sentence_cider": 0.052084265257112225,
+      "sentence_cider_delta": -0.019296399748325532,
+      "features": {
+        "model_rel": -0.001093745231628418,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.5051814855409226,
+        "evidence_support": 1.7320508075688774,
+        "target_lexical": 4.091774613283299,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10082",
+      "source": "bart",
+      "baseline_caption": "firefighters rescue victims from rubble",
+      "selected_caption": "firefighters rescue injured people from rubble",
+      "baseline_sentence_cider": 0.14342550435772358,
+      "selected_sentence_cider": 0.08573104615020524,
+      "sentence_cider_delta": -0.05769445820751834,
+      "features": {
+        "model_rel": -0.011520743370056152,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.3821428571428571,
+        "evidence_support": 2.5,
+        "target_lexical": 4.934058472046946,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10083",
+      "source": "bart",
+      "baseline_caption": "interior shows broken windows and damaged buildings",
+      "selected_caption": "interior shows damaged buildings and destroyed buildings",
+      "baseline_sentence_cider": 0.19347631156458622,
+      "selected_sentence_cider": 0.12250163939703806,
+      "sentence_cider_delta": -0.07097467216754816,
+      "features": {
+        "model_rel": -0.04920834302902222,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 1.6617009357883867,
+        "evidence_support": 4.242640687119285,
+        "target_lexical": 3.549456175874788,
+        "domain_count": 2.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10085",
+      "source": "bart",
+      "baseline_caption": "interior shows damaged buildings and broken windows",
+      "selected_caption": "interior shows damaged buildings and debris",
+      "baseline_sentence_cider": 0.07157411170833894,
+      "selected_sentence_cider": 0.11557961901124622,
+      "sentence_cider_delta": 0.04400550730290728,
+      "features": {
+        "model_rel": -0.08001995086669922,
+        "model_rank_penalty": -4.0,
+        "visual_alignment": 0.9454110657980124,
+        "evidence_support": 5.196152422706632,
+        "target_lexical": 3.675546234232672,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10087",
+      "source": "bart",
+      "baseline_caption": "scene shows broken windows and broken glass",
+      "selected_caption": "scene shows shattered windows and broken glass",
+      "baseline_sentence_cider": 0.07761877490040017,
+      "selected_sentence_cider": 0.10459690661539352,
+      "sentence_cider_delta": 0.026978131714993345,
+      "features": {
+        "model_rel": -0.029966115951538086,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.1193242693252299,
+        "evidence_support": 0.7071067811865475,
+        "target_lexical": 4.259637705247615,
+        "domain_count": 2.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10093",
+      "source": "bart",
+      "baseline_caption": "damaged buildings surrounded by debris and debris",
+      "selected_caption": "damaged buildings surrounded by rubble and debris",
+      "baseline_sentence_cider": 0.03384809337673773,
+      "selected_sentence_cider": 0.08908053509271974,
+      "sentence_cider_delta": 0.05523244171598201,
+      "features": {
+        "model_rel": -0.013854742050170898,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.7758144242235596,
+        "evidence_support": 3.464101615137755,
+        "target_lexical": 4.2841210852955545,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10094",
+      "source": "bart",
+      "baseline_caption": "interior shows damage and broken windows",
+      "selected_caption": "interior shows damaged buildings and broken windows",
+      "baseline_sentence_cider": 0.11076339845091729,
+      "selected_sentence_cider": 0.07354890417083357,
+      "sentence_cider_delta": -0.03721449428008372,
+      "features": {
+        "model_rel": -0.042382001876831055,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.7505553499465135,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 4.091774613283299,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10101",
+      "source": "bart",
+      "baseline_caption": "people walk through debris and debris",
+      "selected_caption": "people walk through damaged building with broken windows",
+      "baseline_sentence_cider": 0.0880129156182044,
+      "selected_sentence_cider": 0.14215272593946499,
+      "sentence_cider_delta": 0.054139810321260584,
+      "features": {
+        "model_rel": -0.039617300033569336,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.775,
+        "evidence_support": 4.5,
+        "target_lexical": 4.48219317223207,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10110",
+      "source": "bart",
+      "baseline_caption": "firefighters extinguish fire with hose",
+      "selected_caption": "firefighters remove debris from burning building",
+      "baseline_sentence_cider": 0.07644068695713627,
+      "selected_sentence_cider": 0.2568931745177682,
+      "sentence_cider_delta": 0.18045248756063195,
+      "features": {
+        "model_rel": -0.06321829557418823,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 1.278125,
+        "evidence_support": 5.5,
+        "target_lexical": 4.570517416791241,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10111",
+      "source": "bart",
+      "baseline_caption": "damaged buildings surrounded by debris and debris",
+      "selected_caption": "damaged buildings surrounded by rubble and debris",
+      "baseline_sentence_cider": 0.10055464501748382,
+      "selected_sentence_cider": 0.09511647664519704,
+      "sentence_cider_delta": -0.005438168372286778,
+      "features": {
+        "model_rel": -0.026821434497833252,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.9923207751696693,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 4.2841210852955545,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10112",
+      "source": "bart",
+      "baseline_caption": "emergency personnel search through damaged building",
+      "selected_caption": "emergency workers search through damaged building",
+      "baseline_sentence_cider": 0.21024810369425917,
+      "selected_sentence_cider": 0.19409512131618434,
+      "sentence_cider_delta": -0.01615298237807483,
+      "features": {
+        "model_rel": -0.015324711799621582,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.54375,
+        "evidence_support": 3.5,
+        "target_lexical": 4.567878051245762,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10035",
+      "source": "bart",
+      "baseline_caption": "scene shows broken windows and damaged vehicles",
+      "selected_caption": "scene shows broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.04940897535637596,
+      "selected_sentence_cider": 0.04940897535637596,
+      "sentence_cider_delta": 0.0,
+      "features": {
+        "model_rel": -0.008660197257995605,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 1.096965511460289,
+        "evidence_support": 3.464101615137755,
+        "target_lexical": 3.7189145540548076,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10062",
+      "source": "bart",
+      "baseline_caption": "camera shows destruction and destruction",
+      "selected_caption": "interior shows damaged buildings and damaged windows",
+      "baseline_sentence_cider": 0.011753576908240195,
+      "selected_sentence_cider": 0.13173786714925523,
+      "sentence_cider_delta": 0.11998429024101503,
+      "features": {
+        "model_rel": -0.16755586862564087,
+        "model_rank_penalty": -6.0,
+        "visual_alignment": 0.6783865662978104,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 3.5207362025877496,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10078",
+      "source": "bart",
+      "baseline_caption": "firefighters work to remove debris from site",
+      "selected_caption": "firefighters remove debris from collapsed building",
+      "baseline_sentence_cider": 0.040161426646012924,
+      "selected_sentence_cider": 0.08923073012797206,
+      "sentence_cider_delta": 0.049069303481959134,
+      "features": {
+        "model_rel": -0.07597917318344116,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.796875,
+        "evidence_support": 5.0,
+        "target_lexical": 4.3587207375262365,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10102",
+      "source": "bart",
+      "baseline_caption": "firefighters monitor damaged building with smoke and water",
+      "selected_caption": "emergency workers talk about damaged buildings and damage",
+      "baseline_sentence_cider": 0.009213053908924292,
+      "selected_sentence_cider": 0.036502686976614754,
+      "sentence_cider_delta": 0.02728963306769046,
+      "features": {
+        "model_rel": -0.05410265922546387,
+        "model_rank_penalty": -2.0,
+        "visual_alignment": 0.42857142857142855,
+        "evidence_support": 3.0,
+        "target_lexical": 5.399137486633731,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    }
+  ],
+  "dev_source_counts": {
+    "bart": 84
+  },
+  "test_baseline_metrics": {
+    "Bleu_1": 0.5961538461509801,
+    "Bleu_2": 0.3324498519492491,
+    "Bleu_3": 0.173551965891537,
+    "Bleu_4": 1.4507803052124038e-05,
+    "METEOR": 0.27437552447689495,
+    "ROUGE_L": 0.32315263683684736,
+    "CIDEr": 0.13744177764881674
+  },
+  "test_metrics": {
+    "Bleu_1": 0.6008968609838525,
+    "Bleu_2": 0.3439640955873193,
+    "Bleu_3": 0.19986823066632892,
+    "Bleu_4": 0.10467727649473094,
+    "METEOR": 0.28852490162181393,
+    "ROUGE_L": 0.31982645321654607,
+    "CIDEr": 0.15210421290642032
+  },
+  "test_oracle_metrics": {
+    "Bleu_1": 0.7815126050387332,
+    "Bleu_2": 0.5054646431672583,
+    "Bleu_3": 0.31121483141584844,
+    "Bleu_4": 0.15722083524512537,
+    "METEOR": 0.377584870468867,
+    "ROUGE_L": 0.42035067873303167,
+    "CIDEr": 0.32048214544191284
+  },
+  "test_cider_gain_vs_clean_baseline": 0.014662435257603579,
+  "test_cider_gain_vs_current_reported_baseline": -0.054766294359854,
+  "test_switches": [
+    {
+      "video_id": "video10000",
+      "source": "bart",
+      "baseline_caption": "scene shows damage to buildings and damaged buildings",
+      "selected_caption": "scene shows destruction and destruction as people repair damaged buildings",
+      "baseline_sentence_cider": 0.00420185547675716,
+      "selected_sentence_cider": 0.0025894413415964964,
+      "sentence_cider_delta": -0.0016124141351606634,
+      "features": {
+        "model_rel": -0.004354357719421387,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.8443747686898276,
+        "evidence_support": 4.618802153517007,
+        "target_lexical": 4.753419660838109,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.25,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10001",
+      "source": "bart",
+      "baseline_caption": "construction workers work on the roof of a building",
+      "selected_caption": "construction workers talk about broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.13112434452934443,
+      "selected_sentence_cider": 0.11598281574805597,
+      "sentence_cider_delta": -0.015141528781288466,
+      "features": {
+        "model_rel": -0.13387376070022583,
+        "model_rank_penalty": -3.0,
+        "visual_alignment": 1.0785714285714287,
+        "evidence_support": 3.0,
+        "target_lexical": 6.082743203329412,
+        "domain_count": 4.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10003",
+      "source": "bart",
+      "baseline_caption": "construction crews remove debris from damaged buildings",
+      "selected_caption": "construction workers remove debris from damaged buildings",
+      "baseline_sentence_cider": 0.07927594760269929,
+      "selected_sentence_cider": 0.10924241222327784,
+      "sentence_cider_delta": 0.029966464620578545,
+      "features": {
+        "model_rel": -0.01146841049194336,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.23500000000000001,
+        "evidence_support": 1.0,
+        "target_lexical": 5.19558833348345,
+        "domain_count": 4.5,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10004",
+      "source": "bart",
+      "baseline_caption": "damaged buildings surrounded by rubble and debris",
+      "selected_caption": "damaged buildings surrounded by broken glass and debris",
+      "baseline_sentence_cider": 0.04493196921900028,
+      "selected_sentence_cider": 0.03443966500779005,
+      "sentence_cider_delta": -0.01049230421121023,
+      "features": {
+        "model_rel": -0.05965536832809448,
+        "model_rank_penalty": -3.0,
+        "visual_alignment": 1.05,
+        "evidence_support": 5.5,
+        "target_lexical": 4.8303545171591695,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10005",
+      "source": "bart",
+      "baseline_caption": "emergency workers remove debris from damaged building",
+      "selected_caption": "construction workers remove debris from damaged building",
+      "baseline_sentence_cider": 0.008887953174245712,
+      "selected_sentence_cider": 0.007542247619516757,
+      "sentence_cider_delta": -0.0013457055547289555,
+      "features": {
+        "model_rel": -0.05471038818359375,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.9625,
+        "evidence_support": 5.0,
+        "target_lexical": 5.042336927573718,
+        "domain_count": 4.5,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10006",
+      "source": "bart",
+      "baseline_caption": "firefighters use hose to clear debris",
+      "selected_caption": "firefighters use fire hose to clear debris",
+      "baseline_sentence_cider": 0.0863730703049374,
+      "selected_sentence_cider": 0.1337986046990569,
+      "sentence_cider_delta": 0.047425534394119506,
+      "features": {
+        "model_rel": -0.06659156084060669,
+        "model_rank_penalty": -3.0,
+        "visual_alignment": 0.55930807327745,
+        "evidence_support": 2.3094010767585034,
+        "target_lexical": 5.622013643986179,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10011",
+      "source": "bart",
+      "baseline_caption": "man walks through damaged building",
+      "selected_caption": "man walks past damaged building with broken windows",
+      "baseline_sentence_cider": 0.04130234826054496,
+      "selected_sentence_cider": 0.014931702801022984,
+      "sentence_cider_delta": -0.02637064545952198,
+      "features": {
+        "model_rel": -0.011074542999267578,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.984375,
+        "evidence_support": 5.5,
+        "target_lexical": 5.638770878783998,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10013",
+      "source": "bart",
+      "baseline_caption": "emergency teams respond to fire and smoke",
+      "selected_caption": "firefighters use ladder to reach injured victims",
+      "baseline_sentence_cider": 0.16092741556873869,
+      "selected_sentence_cider": 0.23722864160493867,
+      "sentence_cider_delta": 0.07630122603619999,
+      "features": {
+        "model_rel": -0.10204517841339111,
+        "model_rank_penalty": -6.0,
+        "visual_alignment": 0.5,
+        "evidence_support": 3.0,
+        "target_lexical": 7.0851900939867685,
+        "domain_count": 1.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10015",
+      "source": "bart",
+      "baseline_caption": "interior shows damaged walls and broken windows",
+      "selected_caption": "damaged building with damaged walls and broken windows",
+      "baseline_sentence_cider": 0.19011597431835192,
+      "selected_sentence_cider": 0.17596779223665543,
+      "sentence_cider_delta": -0.014148182081696492,
+      "features": {
+        "model_rel": -0.004701852798461914,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.4835308504463116,
+        "evidence_support": 2.886751345948129,
+        "target_lexical": 3.407978311235182,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10021",
+      "source": "bart",
+      "baseline_caption": "scene shows broken pavement and debris",
+      "selected_caption": "damaged road shows broken pavement and debris",
+      "baseline_sentence_cider": 0.19907945149286943,
+      "selected_sentence_cider": 0.46256633098756444,
+      "sentence_cider_delta": 0.263486879494695,
+      "features": {
+        "model_rel": -0.06368446350097656,
+        "model_rank_penalty": -4.0,
+        "visual_alignment": 0.4948716593053935,
+        "evidence_support": 1.7320508075688774,
+        "target_lexical": 4.595353253051616,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10022",
+      "source": "bart",
+      "baseline_caption": "people talk about destruction and destruction",
+      "selected_caption": "people talk about damaged buildings and damage",
+      "baseline_sentence_cider": 0.07426944921362787,
+      "selected_sentence_cider": 0.10186456549710485,
+      "sentence_cider_delta": 0.02759511628347698,
+      "features": {
+        "model_rel": -0.16127264499664307,
+        "model_rank_penalty": -4.0,
+        "visual_alignment": 0.627868417743718,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 4.965138849066205,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10024",
+      "source": "bart",
+      "baseline_caption": "smoke billows from destroyed building",
+      "selected_caption": "smoke billows from damaged building as fire spreads",
+      "baseline_sentence_cider": 0.09249039825237655,
+      "selected_sentence_cider": 0.08001154038265851,
+      "sentence_cider_delta": -0.012478857869718044,
+      "features": {
+        "model_rel": -0.08569562435150146,
+        "model_rank_penalty": -5.0,
+        "visual_alignment": 1.2625000000000002,
+        "evidence_support": 6.0,
+        "target_lexical": 5.556887126105298,
+        "domain_count": 4.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.0,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10027",
+      "source": "bart",
+      "baseline_caption": "fire and smoke billows from building",
+      "selected_caption": "fire and smoke billows from burning building",
+      "baseline_sentence_cider": 0.2031255072343358,
+      "selected_sentence_cider": 0.2294824899149797,
+      "sentence_cider_delta": 0.026356982680643876,
+      "features": {
+        "model_rel": -0.016658663749694824,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.48713928962874675,
+        "evidence_support": 1.7320508075688774,
+        "target_lexical": 4.904726932320615,
+        "domain_count": 3.0,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.125,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10028",
+      "source": "bart",
+      "baseline_caption": "firefighters and firefighters work on the roof of a large building",
+      "selected_caption": "firefighters and firefighters work on the roof of a building under heavy fire",
+      "baseline_sentence_cider": 0.0915454029381284,
+      "selected_sentence_cider": 0.06074160332159602,
+      "sentence_cider_delta": -0.030803799616532387,
+      "features": {
+        "model_rel": -0.032524704933166504,
+        "model_rank_penalty": -4.0,
+        "visual_alignment": 1.1918159128271562,
+        "evidence_support": 3.464101615137755,
+        "target_lexical": 6.036074814621729,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.625,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    },
+    {
+      "video_id": "video10029",
+      "source": "bart",
+      "baseline_caption": "emergency personnel walk through damaged building",
+      "selected_caption": "soldiers walk through damaged building",
+      "baseline_sentence_cider": 0.05160555566812647,
+      "selected_sentence_cider": 0.12717453156358116,
+      "sentence_cider_delta": 0.0755689758954547,
+      "features": {
+        "model_rel": -0.009085893630981445,
+        "model_rank_penalty": -1.0,
+        "visual_alignment": 0.7252962756694674,
+        "evidence_support": 4.041451884327381,
+        "target_lexical": 4.554553381009591,
+        "domain_count": 3.25,
+        "source_bias": 0.0,
+        "is_bart": 1.0,
+        "is_visual": 0.0,
+        "length_penalty": 0.375,
+        "repetition_penalty": 0.0,
+        "bad_penalty": 0.0
+      }
+    }
+  ],
+  "test_source_counts": {
+    "bart": 30
+  },
+  "test_num_candidates": 622,
+  "dev_num_candidates": 1736,
+  "top_grid_results": [
+    {
+      "weights": {
+        "model": 2.0,
+        "rank": 0.05,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.2,
+        "domain": 0.0,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14643767426779794,
+      "num_dev_switches": 36,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 1.0,
+        "rank": 0.02,
+        "visual": 1.5,
+        "support": 0.25,
+        "lexical": 0.1,
+        "domain": 0.0,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14606469749897139,
+      "num_dev_switches": 53,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 1.5,
+        "rank": 0.05,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.2,
+        "domain": 0.1,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14558251133790306,
+      "num_dev_switches": 39,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 2.0,
+        "rank": 0.05,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.2,
+        "domain": 0.1,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14539702805332516,
+      "num_dev_switches": 37,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 2.0,
+        "rank": 0.05,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.1,
+        "domain": 0.2,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14538291082197433,
+      "num_dev_switches": 38,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 0.75,
+        "rank": 0.0,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.2,
+        "domain": 0.0,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14529939573901668,
+      "num_dev_switches": 70,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 2.0,
+        "rank": 0.05,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.0,
+        "domain": 0.0,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.14528589052048058,
+      "num_dev_switches": 33,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 1.5,
+        "rank": 0.02,
+        "visual": 2.0,
+        "support": 0.25,
+        "lexical": 0.1,
+        "domain": 0.0,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.145201522484405,
+      "num_dev_switches": 52,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 1.25,
+        "rank": 0.0,
+        "visual": 1.0,
+        "support": 0.25,
+        "lexical": 0.2,
+        "domain": 0.0,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.1451618840641918,
+      "num_dev_switches": 63,
+      "source_counts": {
+        "bart": 84
+      }
+    },
+    {
+      "weights": {
+        "model": 2.0,
+        "rank": 0.05,
+        "visual": 0.5,
+        "support": 0.25,
+        "lexical": 0.2,
+        "domain": 0.05,
+        "source": 1.0,
+        "length": 0.05,
+        "repeat": 0.2,
+        "bad": 1.0,
+        "switch_margin": 0.0
+      },
+      "dev_mean_sentence_cider": 0.1451058294939547,
+      "num_dev_switches": 36,
+      "source_counts": {
+        "bart": 84
+      }
+    }
+  ],
+  "interpretation_note": "Weights are selected only on the requested development splits. Held-out test captions are used only for final scoring and oracle diagnostics."
+}

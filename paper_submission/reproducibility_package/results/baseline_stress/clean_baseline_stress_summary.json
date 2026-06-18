@@ -1,0 +1,90 @@
+[
+  {
+    "method": "Caption prior medoid",
+    "uses_test_video": false,
+    "uses_target_train_captions": true,
+    "uses_external_pretraining": false,
+    "Bleu_2": 0.1143,
+    "METEOR": 0.1741,
+    "ROUGE_L": 0.1775,
+    "CIDEr": 0.0186,
+    "keyword_coverage": "100.0%"
+  },
+  {
+    "method": "Train-neighbor retrieval",
+    "uses_test_video": true,
+    "uses_target_train_captions": true,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.1267,
+    "METEOR": 0.2021,
+    "ROUGE_L": 0.2109,
+    "CIDEr": 0.0364,
+    "keyword_coverage": "90.0%"
+  },
+  {
+    "method": "BLIP frame-caption baseline",
+    "uses_test_video": true,
+    "uses_target_train_captions": false,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.1729,
+    "METEOR": 0.2085,
+    "ROUGE_L": 0.2361,
+    "CIDEr": 0.0827,
+    "keyword_coverage": "53.3%"
+  },
+  {
+    "method": "GIT frame-caption baseline",
+    "uses_test_video": true,
+    "uses_target_train_captions": false,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.179,
+    "METEOR": 0.1949,
+    "ROUGE_L": 0.2378,
+    "CIDEr": 0.0711,
+    "keyword_coverage": "43.3%"
+  },
+  {
+    "method": "Source-only transfer",
+    "uses_test_video": true,
+    "uses_target_train_captions": false,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.1472,
+    "METEOR": 0.1367,
+    "ROUGE_L": 0.2009,
+    "CIDEr": 0.0489,
+    "keyword_coverage": "16.7%"
+  },
+  {
+    "method": "Strongest direct transfer",
+    "uses_test_video": true,
+    "uses_target_train_captions": true,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.3624,
+    "METEOR": 0.279,
+    "ROUGE_L": 0.3336,
+    "CIDEr": 0.1477,
+    "keyword_coverage": "83.3%"
+  },
+  {
+    "method": "Clean adapted model-score baseline",
+    "uses_test_video": true,
+    "uses_target_train_captions": true,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.3324,
+    "METEOR": 0.2744,
+    "ROUGE_L": 0.3232,
+    "CIDEr": 0.1374,
+    "keyword_coverage": "90.0%"
+  },
+  {
+    "method": "LV-ECR",
+    "uses_test_video": true,
+    "uses_target_train_captions": true,
+    "uses_external_pretraining": true,
+    "Bleu_2": 0.344,
+    "METEOR": 0.2885,
+    "ROUGE_L": 0.3198,
+    "CIDEr": 0.1521,
+    "keyword_coverage": "93.3%"
+  }
+]

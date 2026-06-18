@@ -1,6 +1,7 @@
 import argparse
 import json
 import math
+import os
 import random
 import sys
 from dataclasses import asdict, dataclass
@@ -9,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from transformers import BartTokenizer, get_cosine_schedule_with_warmup
 
@@ -16,6 +18,10 @@ from transformers import BartTokenizer, get_cosine_schedule_with_warmup
 PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+OPENJDK_BIN = Path("/opt/homebrew/opt/openjdk/bin")
+if OPENJDK_BIN.exists():
+    os.environ["PATH"] = f"{OPENJDK_BIN}:{os.environ.get('PATH', '')}"
 
 COCO_ROOT = PROJECT_ROOT / "coco-caption"
 if str(COCO_ROOT) not in sys.path:
@@ -277,6 +283,7 @@ class FinalBartDataset(Dataset):
         fused_visual_roots: list[Path],
         use_dino: bool,
         use_audio: bool,
+        expand_captions: bool = False,
         debug_n: int | None = None,
     ) -> None:
         self.split = split
@@ -284,13 +291,18 @@ class FinalBartDataset(Dataset):
         self.fused_visual_roots = fused_visual_roots
         self.use_dino = use_dino
         self.use_audio = use_audio
+        self.expand_captions = expand_captions
 
+        self.visual_root = visual_root
+        self.audio_root = audio_root
         self.clip_dir = visual_root / "clip_embedding" / split
         self.dino_dir = visual_root / "Dinov2_embedding" / split
         self.audio_dir = audio_root / split
         self.caption_map = json.loads((captions_root / f"{split}_captions.json").read_text())
+        self.anchor_target_map: dict[str, list[float]] | None = None
 
         self.video_ids: list[str] = []
+        self.examples: list[tuple[str, str]] = []
         for video_id in split_ids:
             if video_id not in self.caption_map:
                 continue
@@ -298,22 +310,42 @@ class FinalBartDataset(Dataset):
                 if self._find_fused_path(video_id) is None:
                     continue
             else:
-                if not (self.clip_dir / f"{video_id}.npy").exists():
+                if self._find_split_feature_path(
+                    base_dir=self.visual_root / "clip_embedding",
+                    split=self.split,
+                    video_id=video_id,
+                ) is None:
                     continue
-                if self.use_dino and not (self.dino_dir / f"{video_id}.npy").exists():
+                if self.use_dino and self._find_split_feature_path(
+                    base_dir=self.visual_root / "Dinov2_embedding",
+                    split=self.split,
+                    video_id=video_id,
+                ) is None:
                     continue
-            if self.use_audio and not (self.audio_dir / f"{video_id}.npy").exists():
+            if self.use_audio and self._find_split_feature_path(
+                base_dir=self.audio_root,
+                split=self.split,
+                video_id=video_id,
+            ) is None:
                 continue
             self.video_ids.append(video_id)
+            if self.expand_captions:
+                self.examples.extend((video_id, caption) for caption in self.caption_map[video_id])
 
         if debug_n is not None:
             self.video_ids = self.video_ids[:debug_n]
+            if self.expand_captions:
+                keep = set(self.video_ids)
+                self.examples = [example for example in self.examples if example[0] in keep]
 
         self.ground_truth = {
             video_id: [{"image_id": video_id, "caption": caption} for caption in self.caption_map[video_id]]
             for video_id in self.video_ids
         }
-        print(f"[{split}] {len(self.video_ids)} usable videos")
+        if self.expand_captions:
+            print(f"[{split}] {len(self.video_ids)} usable videos / {len(self.examples)} caption instances")
+        else:
+            print(f"[{split}] {len(self.video_ids)} usable videos")
 
     def _find_fused_path(self, video_id: str) -> Path | None:
         for root in self.fused_visual_roots:
@@ -322,11 +354,34 @@ class FinalBartDataset(Dataset):
                 return candidate
         return None
 
+    def _find_split_feature_path(self, base_dir: Path, split: str, video_id: str) -> Path | None:
+        preferred = base_dir / split / f"{video_id}.npy"
+        if preferred.exists():
+            return preferred
+
+        direct = base_dir / f"{video_id}.npy"
+        if direct.exists():
+            return direct
+
+        for candidate_split in ("train", "val", "test"):
+            if candidate_split == split:
+                continue
+            candidate = base_dir / candidate_split / f"{video_id}.npy"
+            if candidate.exists():
+                return candidate
+        return None
+
     def __len__(self) -> int:
+        if self.expand_captions:
+            return len(self.examples)
         return len(self.video_ids)
 
     def __getitem__(self, idx: int):
-        video_id = self.video_ids[idx]
+        if self.expand_captions:
+            video_id, caption = self.examples[idx]
+        else:
+            video_id = self.video_ids[idx]
+            caption = random.choice(self.caption_map[video_id])
         if self.visual_source == "fused":
             fused_path = self._find_fused_path(video_id)
             if fused_path is None:
@@ -338,25 +393,52 @@ class FinalBartDataset(Dataset):
             else:
                 dino = torch.zeros(clip.shape[0], DINO_DIM, dtype=torch.float32)
         else:
-            clip = torch.tensor(np.load(self.clip_dir / f"{video_id}.npy"), dtype=torch.float32)
+            clip_path = self._find_split_feature_path(
+                base_dir=self.visual_root / "clip_embedding",
+                split=self.split,
+                video_id=video_id,
+            )
+            if clip_path is None:
+                raise FileNotFoundError(f"Missing CLIP feature for {video_id}")
+            clip = torch.tensor(np.load(clip_path), dtype=torch.float32)
             if self.use_dino:
-                dino = torch.tensor(np.load(self.dino_dir / f"{video_id}.npy"), dtype=torch.float32)
+                dino_path = self._find_split_feature_path(
+                    base_dir=self.visual_root / "Dinov2_embedding",
+                    split=self.split,
+                    video_id=video_id,
+                )
+                if dino_path is None:
+                    raise FileNotFoundError(f"Missing DINO feature for {video_id}")
+                dino = torch.tensor(np.load(dino_path), dtype=torch.float32)
             else:
                 dino = torch.zeros(clip.shape[0], DINO_DIM, dtype=torch.float32)
 
         if self.use_audio:
-            audio = torch.tensor(np.load(self.audio_dir / f"{video_id}.npy"), dtype=torch.float32)
+            audio_path = self._find_split_feature_path(
+                base_dir=self.audio_root,
+                split=self.split,
+                video_id=video_id,
+            )
+            if audio_path is None:
+                raise FileNotFoundError(f"Missing audio feature for {video_id}")
+            audio = torch.tensor(np.load(audio_path), dtype=torch.float32)
         else:
             audio = torch.zeros(1, AUDIO_DIM, dtype=torch.float32)
 
-        caption = random.choice(self.caption_map[video_id])
         references = self.caption_map[video_id]
-        return clip, dino, audio, caption, references, video_id
+        if self.anchor_target_map is not None and video_id in self.anchor_target_map:
+            anchor_target = torch.tensor(self.anchor_target_map[video_id], dtype=torch.float32)
+        else:
+            anchor_target = torch.empty(0, dtype=torch.float32)
+        return clip, dino, audio, caption, references, video_id, anchor_target
+
+    def set_anchor_target_map(self, anchor_target_map: dict[str, list[float]] | None) -> None:
+        self.anchor_target_map = anchor_target_map
 
 
 def make_collate_fn(tokenizer: BartTokenizer, max_caption_len: int):
     def collate(batch):
-        clips, dinos, audios, captions, references, video_ids = zip(*batch)
+        clips, dinos, audios, captions, references, video_ids, anchor_targets = zip(*batch)
         clips = torch.stack(clips)
         dinos = torch.stack(dinos)
 
@@ -376,7 +458,21 @@ def make_collate_fn(tokenizer: BartTokenizer, max_caption_len: int):
         )
         labels = encoded["input_ids"].clone()
         labels[labels == tokenizer.pad_token_id] = -100
-        return clips, dinos, audio_padded, audio_mask, labels, list(references), list(video_ids), list(captions)
+        if all(target.numel() > 0 for target in anchor_targets):
+            anchor_target_tensor = torch.stack(anchor_targets)
+        else:
+            anchor_target_tensor = None
+        return (
+            clips,
+            dinos,
+            audio_padded,
+            audio_mask,
+            labels,
+            anchor_target_tensor,
+            list(references),
+            list(video_ids),
+            list(captions),
+        )
 
     return collate
 
@@ -426,20 +522,34 @@ def train_one_epoch_xe(
     device,
     grad_clip: float,
     grad_accum_steps: int,
+    transfer_anchor_aux_weight: float = 0.0,
 ):
     model.train()
     total_loss = 0.0
     total_batches = 0
     optimizer.zero_grad(set_to_none=True)
-    for step_index, (clips, dinos, audios, audio_mask, labels, _, _, _) in enumerate(loader, start=1):
+    for step_index, (clips, dinos, audios, audio_mask, labels, anchor_targets, _, _, _) in enumerate(loader, start=1):
         clips = clips.to(device)
         dinos = dinos.to(device)
         audios = audios.to(device)
         audio_mask = audio_mask.to(device)
         labels = labels.to(device)
+        if anchor_targets is not None:
+            anchor_targets = anchor_targets.to(device)
 
-        out = model(clips, dinos, audios, audio_mask=audio_mask, labels=labels)
-        loss = out.loss / max(grad_accum_steps, 1)
+        out = model(
+            clips,
+            dinos,
+            audios,
+            audio_mask=audio_mask,
+            labels=labels,
+            transfer_anchor_targets=anchor_targets,
+        )
+        batch_loss = out.loss
+        aux_loss = getattr(getattr(model, "transfer_adapter", None), "last_aux_loss", None)
+        if transfer_anchor_aux_weight > 0 and aux_loss is not None:
+            batch_loss = batch_loss + transfer_anchor_aux_weight * aux_loss
+        loss = batch_loss / max(grad_accum_steps, 1)
         loss.backward()
         if step_index % grad_accum_steps == 0 or step_index == len(loader):
             if grad_clip > 0:
@@ -448,7 +558,7 @@ def train_one_epoch_xe(
             optimizer.zero_grad(set_to_none=True)
             if scheduler is not None:
                 scheduler.step()
-        total_loss += out.loss.item()
+        total_loss += batch_loss.item()
         total_batches += 1
 
     return total_loss / max(total_batches, 1)
@@ -459,13 +569,22 @@ def evaluate_loss(model, loader, device):
     model.eval()
     total_loss = 0.0
     total_batches = 0
-    for clips, dinos, audios, audio_mask, labels, _, _, _ in loader:
+    for clips, dinos, audios, audio_mask, labels, anchor_targets, _, _, _ in loader:
         clips = clips.to(device)
         dinos = dinos.to(device)
         audios = audios.to(device)
         audio_mask = audio_mask.to(device)
         labels = labels.to(device)
-        out = model(clips, dinos, audios, audio_mask=audio_mask, labels=labels)
+        if anchor_targets is not None:
+            anchor_targets = anchor_targets.to(device)
+        out = model(
+            clips,
+            dinos,
+            audios,
+            audio_mask=audio_mask,
+            labels=labels,
+            transfer_anchor_targets=anchor_targets,
+        )
         total_loss += out.loss.item()
         total_batches += 1
     return total_loss / max(total_batches, 1)
@@ -488,11 +607,13 @@ def generate_predictions(
 ) -> dict[str, list[dict[str, str]]]:
     model.eval()
     predictions: dict[str, list[dict[str, str]]] = {}
-    for clips, dinos, audios, audio_mask, _, _, video_ids, _ in loader:
+    for clips, dinos, audios, audio_mask, _, anchor_targets, _, video_ids, _ in loader:
         clips = clips.to(device)
         dinos = dinos.to(device)
         audios = audios.to(device)
         audio_mask = audio_mask.to(device)
+        if anchor_targets is not None:
+            anchor_targets = anchor_targets.to(device)
         generate_kwargs = {
             "max_new_tokens": max_new_tokens,
             "num_beams": num_beams,
@@ -505,6 +626,7 @@ def generate_predictions(
             dinos,
             audios,
             audio_mask=audio_mask,
+            transfer_anchor_targets=anchor_targets,
             **generate_kwargs,
         )
         captions = decode_sequences(tokenizer, generated)
@@ -539,11 +661,160 @@ def evaluate_metrics(
     return metrics, predictions
 
 
-def load_model_weights(model: nn.Module, checkpoint_path: Path, device: torch.device) -> dict:
+def load_model_weights(model: nn.Module, checkpoint_path: Path, device: torch.device, strict: bool = True) -> dict:
     payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
     state = payload["model"] if isinstance(payload, dict) and "model" in payload else payload
-    model.load_state_dict(state)
+    if strict:
+        model.load_state_dict(state)
+        return payload if isinstance(payload, dict) else {"model": state}
+
+    model_state = model.state_dict()
+    filtered = {
+        name: value
+        for name, value in state.items()
+        if name in model_state and model_state[name].shape == value.shape
+    }
+    missing_keys, unexpected_keys = model.load_state_dict(filtered, strict=False)
+    print(
+        "Partial checkpoint load:"
+        f" loaded={len(filtered)} missing={len(missing_keys)} unexpected={len(unexpected_keys)}"
+    )
     return payload if isinstance(payload, dict) else {"model": state}
+
+
+@torch.no_grad()
+def embed_captions_with_bart(
+    model: nn.Module,
+    tokenizer: BartTokenizer,
+    captions: list[str],
+    max_caption_len: int,
+    device: torch.device,
+    batch_size: int = 64,
+) -> torch.Tensor:
+    embeddings: list[torch.Tensor] = []
+    embedding_layer = model.bart.model.shared
+    special_token_ids = {
+        token_id
+        for token_id in (tokenizer.pad_token_id, tokenizer.bos_token_id, tokenizer.eos_token_id)
+        if token_id is not None
+    }
+
+    for start in range(0, len(captions), batch_size):
+        batch = captions[start : start + batch_size]
+        encoded = tokenizer(
+            batch,
+            padding=True,
+            truncation=True,
+            max_length=max_caption_len,
+            return_tensors="pt",
+        )
+        input_ids = encoded["input_ids"].to(device)
+        attention_mask = encoded["attention_mask"].to(device).bool()
+        valid_mask = attention_mask.clone()
+        for token_id in special_token_ids:
+            valid_mask &= input_ids.ne(token_id)
+        fallback_mask = attention_mask & input_ids.ne(tokenizer.pad_token_id)
+        empty_rows = ~valid_mask.any(dim=1)
+        if empty_rows.any():
+            valid_mask[empty_rows] = fallback_mask[empty_rows]
+
+        token_embeddings = embedding_layer(input_ids)
+        weights = valid_mask.to(token_embeddings.dtype).unsqueeze(-1)
+        pooled = (token_embeddings * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+        embeddings.append(F.normalize(pooled.detach().cpu(), dim=-1))
+
+    return torch.cat(embeddings, dim=0)
+
+
+def cosine_kmeans(
+    embeddings: torch.Tensor,
+    num_clusters: int,
+    num_iters: int,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    if embeddings.ndim != 2:
+        raise ValueError("embeddings must be a 2D tensor")
+    if num_clusters <= 0:
+        raise ValueError("num_clusters must be positive")
+    if embeddings.shape[0] == 0:
+        raise ValueError("Cannot cluster an empty caption set")
+
+    embeddings = F.normalize(embeddings.float(), dim=-1)
+    n_items = embeddings.shape[0]
+    chosen = [0]
+    min_distance = 1.0 - (embeddings @ embeddings[0].unsqueeze(1)).squeeze(1)
+    for _ in range(1, min(num_clusters, n_items)):
+        next_index = int(torch.argmax(min_distance).item())
+        chosen.append(next_index)
+        next_distance = 1.0 - (embeddings @ embeddings[next_index].unsqueeze(1)).squeeze(1)
+        min_distance = torch.minimum(min_distance, next_distance)
+    while len(chosen) < num_clusters:
+        chosen.append(chosen[len(chosen) % n_items])
+
+    centroids = F.normalize(embeddings[torch.tensor(chosen[:num_clusters])].clone(), dim=-1)
+    labels = torch.zeros(n_items, dtype=torch.long)
+    for _ in range(max(num_iters, 1)):
+        labels = torch.argmax(embeddings @ centroids.T, dim=1)
+        next_centroids = centroids.clone()
+        for cluster_index in range(num_clusters):
+            member_mask = labels.eq(cluster_index)
+            if member_mask.any():
+                next_centroids[cluster_index] = F.normalize(embeddings[member_mask].mean(dim=0), dim=0)
+        if torch.allclose(next_centroids, centroids, atol=1e-6):
+            centroids = next_centroids
+            break
+        centroids = next_centroids
+    labels = torch.argmax(embeddings @ centroids.T, dim=1)
+    return centroids, labels
+
+
+def build_transfer_anchor_bank(
+    model: nn.Module,
+    tokenizer: BartTokenizer,
+    train_dataset: FinalBartDataset,
+    num_anchors: int,
+    max_caption_len: int,
+    device: torch.device,
+    num_iters: int,
+    smoothing: float,
+) -> tuple[torch.Tensor, dict[str, list[float]], dict]:
+    caption_records: list[tuple[str, str]] = []
+    for video_id in train_dataset.video_ids:
+        for caption in train_dataset.caption_map[video_id]:
+            caption_records.append((video_id, caption))
+    if not caption_records:
+        raise ValueError("Cannot build transfer anchor bank: no training captions are available")
+
+    captions = [caption for _, caption in caption_records]
+    caption_embeddings = embed_captions_with_bart(
+        model=model,
+        tokenizer=tokenizer,
+        captions=captions,
+        max_caption_len=max_caption_len,
+        device=device,
+    )
+    anchor_embeddings, labels = cosine_kmeans(caption_embeddings, num_anchors, num_iters)
+
+    target_map: dict[str, list[float]] = {}
+    label_offset = 0
+    for video_id in train_dataset.video_ids:
+        captions_for_video = train_dataset.caption_map[video_id]
+        count = torch.full((num_anchors,), float(max(smoothing, 0.0)), dtype=torch.float32)
+        for _ in captions_for_video:
+            count[int(labels[label_offset].item())] += 1.0
+            label_offset += 1
+        target_map[video_id] = (count / count.sum().clamp_min(1e-8)).tolist()
+
+    cluster_counts = torch.bincount(labels, minlength=num_anchors).tolist()
+    summary = {
+        "source_split": "train",
+        "num_train_videos": len(train_dataset.video_ids),
+        "num_train_captions": len(caption_records),
+        "num_anchors": num_anchors,
+        "num_iters": num_iters,
+        "smoothing": smoothing,
+        "cluster_counts": [int(value) for value in cluster_counts],
+    }
+    return anchor_embeddings, target_map, summary
 
 
 def build_checkpoint_payload(
@@ -594,8 +865,15 @@ def sample_sequences_with_log_probs(
     temperature: float,
     pad_token_id: int,
     eos_token_id: int,
+    transfer_anchor_targets: torch.Tensor | None = None,
 ):
-    encoder_hidden_states, attention_mask = model._encode(clips, dinos, audios, audio_mask)
+    encoder_hidden_states, attention_mask = model._encode(
+        clips,
+        dinos,
+        audios,
+        audio_mask,
+        transfer_anchor_targets=transfer_anchor_targets,
+    )
     batch_size = clips.shape[0]
     decoder_input_ids = torch.full(
         (batch_size, 1),
@@ -663,6 +941,7 @@ def train_one_epoch_scst(
     grad_clip: float,
     xe_weight: float,
     grad_accum_steps: int,
+    transfer_anchor_aux_weight: float = 0.0,
 ):
     model.train()
     total_loss = 0.0
@@ -674,12 +953,14 @@ def train_one_epoch_scst(
     eos_token_id = tokenizer.eos_token_id
 
     optimizer.zero_grad(set_to_none=True)
-    for step_index, (clips, dinos, audios, audio_mask, labels, references, video_ids, _) in enumerate(loader, start=1):
+    for step_index, (clips, dinos, audios, audio_mask, labels, anchor_targets, references, video_ids, _) in enumerate(loader, start=1):
         clips = clips.to(device)
         dinos = dinos.to(device)
         audios = audios.to(device)
         audio_mask = audio_mask.to(device)
         labels = labels.to(device)
+        if anchor_targets is not None:
+            anchor_targets = anchor_targets.to(device)
 
         model.eval()
         sampled_ids, sampled_log_probs = sample_sequences_with_log_probs(
@@ -693,6 +974,7 @@ def train_one_epoch_scst(
             temperature=temperature,
             pad_token_id=pad_token_id,
             eos_token_id=eos_token_id,
+            transfer_anchor_targets=anchor_targets,
         )
         sampled_captions = decode_sequences(tokenizer, sampled_ids)
 
@@ -702,6 +984,7 @@ def train_one_epoch_scst(
                 dinos,
                 audios,
                 audio_mask=audio_mask,
+                transfer_anchor_targets=anchor_targets,
                 max_new_tokens=max_new_tokens,
                 num_beams=1,
                 do_sample=False,
@@ -716,8 +999,18 @@ def train_one_epoch_scst(
         scst_loss = -(reward_advantage * sampled_log_probs).mean()
         loss = scst_loss
         if xe_weight > 0:
-            xe_out = model(clips, dinos, audios, audio_mask=audio_mask, labels=labels)
+            xe_out = model(
+                clips,
+                dinos,
+                audios,
+                audio_mask=audio_mask,
+                labels=labels,
+                transfer_anchor_targets=anchor_targets,
+            )
             loss = loss + xe_weight * xe_out.loss
+            aux_loss = getattr(getattr(model, "transfer_adapter", None), "last_aux_loss", None)
+            if transfer_anchor_aux_weight > 0 and aux_loss is not None:
+                loss = loss + transfer_anchor_aux_weight * aux_loss
 
         scaled_loss = loss / max(grad_accum_steps, 1)
         scaled_loss.backward()
@@ -747,10 +1040,9 @@ def train_one_epoch_scst(
 def build_model(args: argparse.Namespace, use_dino: bool, use_audio: bool, device: torch.device):
     architecture = args.architecture.lower()
     if architecture == "stable":
-        if args.decoder_train_mode not in {"freeze", "full"}:
+        if args.decoder_train_mode not in {"freeze", "full", "partial"}:
             raise ValueError(
-                "Stable architecture only supports decoder_train_mode=freeze or full. "
-                "Use --decoder-train-mode freeze for the proven configuration."
+                "Stable architecture only supports decoder_train_mode=freeze, partial, or full."
             )
         model = FlexibleBartCaptioningModel(
             use_dino=use_dino,
@@ -758,8 +1050,18 @@ def build_model(args: argparse.Namespace, use_dino: bool, use_audio: bool, devic
             encoder_d_model=args.encoder_d_model,
             n_heads=args.n_heads,
             bart_model_name=args.bart_model_name,
-            freeze_decoder=(args.decoder_train_mode == "freeze"),
+            decoder_train_mode=args.decoder_train_mode,
+            decoder_train_last_n_layers=args.decoder_train_last_n_layers,
             gradient_checkpointing=not args.disable_gradient_checkpointing,
+            max_audio_tokens=args.max_audio_tokens,
+            transfer_adapter=args.transfer_adapter,
+            transfer_num_anchors=args.transfer_num_anchors,
+            transfer_num_tokens=args.transfer_num_tokens,
+            transfer_bottleneck_dim=args.transfer_bottleneck_dim,
+            transfer_dropout=args.transfer_dropout,
+            transfer_gate_init=args.transfer_gate_init,
+            transfer_residual_scale=args.transfer_residual_scale,
+            transfer_anchor_temperature=args.transfer_anchor_temperature,
         )
     elif architecture == "experimental":
         model = FinalBartCaptioningModel(
@@ -774,10 +1076,48 @@ def build_model(args: argparse.Namespace, use_dino: bool, use_audio: bool, devic
             audio_summary_tokens=args.audio_summary_tokens,
             feature_dropout=args.feature_dropout,
             gradient_checkpointing=not args.disable_gradient_checkpointing,
+            transfer_adapter=args.transfer_adapter,
+            transfer_num_anchors=args.transfer_num_anchors,
+            transfer_num_tokens=args.transfer_num_tokens,
+            transfer_bottleneck_dim=args.transfer_bottleneck_dim,
+            transfer_dropout=args.transfer_dropout,
+            transfer_gate_init=args.transfer_gate_init,
+            transfer_residual_scale=args.transfer_residual_scale,
+            transfer_anchor_temperature=args.transfer_anchor_temperature,
         )
     else:
         raise ValueError(f"Unsupported architecture: {args.architecture}")
     return model.to(device)
+
+
+def freeze_non_bart_parameters(model: nn.Module) -> None:
+    for name, parameter in model.named_parameters():
+        if not name.startswith("bart."):
+            parameter.requires_grad = False
+
+
+def freeze_for_transfer_adapter(
+    model: nn.Module,
+    train_lm_head: bool = False,
+    train_visual_projection: bool = False,
+) -> None:
+    for parameter in model.parameters():
+        parameter.requires_grad = False
+
+    for name, parameter in model.named_parameters():
+        if "transfer_adapter" in name:
+            parameter.requires_grad = True
+        if train_visual_projection and (
+            name.startswith("proj.")
+            or name.startswith("input_norm.")
+            or name.startswith("modality_type_embeddings.")
+        ):
+            parameter.requires_grad = True
+
+    if train_lm_head and hasattr(model, "bart"):
+        model.bart.model.shared.weight.requires_grad = True
+        for parameter in model.bart.lm_head.parameters():
+            parameter.requires_grad = True
 
 
 def print_layout(layout: FinalLayout) -> None:
@@ -814,6 +1154,21 @@ def parse_args():
     parser.add_argument("--max-visual-positions", type=int, default=40)
     parser.add_argument("--audio-summary-tokens", type=int, default=4)
     parser.add_argument("--feature-dropout", type=float, default=0.1)
+    parser.add_argument("--max-audio-tokens", type=int, default=None)
+    parser.add_argument("--transfer-adapter", choices=["none", "target_residual_prefix", "target_anchor_prefix"], default="none")
+    parser.add_argument("--transfer-num-anchors", type=int, default=12)
+    parser.add_argument("--transfer-num-tokens", type=int, default=4)
+    parser.add_argument("--transfer-bottleneck-dim", type=int, default=64)
+    parser.add_argument("--transfer-dropout", type=float, default=0.1)
+    parser.add_argument("--transfer-gate-init", type=float, default=-4.0)
+    parser.add_argument("--transfer-residual-scale", type=float, default=1.0)
+    parser.add_argument("--transfer-anchor-temperature", type=float, default=0.08)
+    parser.add_argument("--transfer-anchor-smoothing", type=float, default=0.02)
+    parser.add_argument("--transfer-anchor-iters", type=int, default=25)
+    parser.add_argument("--transfer-anchor-aux-weight", type=float, default=0.0)
+    parser.add_argument("--transfer-train-only", action="store_true")
+    parser.add_argument("--transfer-train-lm-head", action="store_true")
+    parser.add_argument("--transfer-train-visual-proj", action="store_true")
     parser.add_argument("--xe-epochs", type=int, default=20)
     parser.add_argument("--scst-epochs", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=8)
@@ -843,6 +1198,10 @@ def parse_args():
     parser.add_argument("--disable-gradient-checkpointing", action="store_true")
     parser.add_argument("--skip-scst", action="store_true")
     parser.add_argument("--debug-n", type=int, default=None)
+    parser.add_argument("--expand-train-captions", action="store_true")
+    parser.add_argument("--expand-val-loss-captions", action="store_true")
+    parser.add_argument("--allow-partial-init", action="store_true")
+    parser.add_argument("--freeze-non-bart", action="store_true")
     parser.add_argument("--seed", type=int, default=1337)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="auto")
     args = parser.parse_args()
@@ -873,6 +1232,20 @@ def main() -> int:
         fused_visual_roots=layout.fused_visual_roots,
         use_dino=use_dino,
         use_audio=use_audio,
+        expand_captions=args.expand_train_captions,
+        debug_n=args.debug_n,
+    )
+    val_loss_ds = FinalBartDataset(
+        split="val",
+        split_ids=split_ids["val"],
+        captions_root=layout.captions_root,
+        visual_root=layout.visual_root,
+        audio_root=layout.audio_root,
+        visual_source=layout.visual_source,
+        fused_visual_roots=layout.fused_visual_roots,
+        use_dino=use_dino,
+        use_audio=use_audio,
+        expand_captions=args.expand_val_loss_captions,
         debug_n=args.debug_n,
     )
     val_ds = FinalBartDataset(
@@ -902,6 +1275,7 @@ def main() -> int:
 
     collate_fn = make_collate_fn(tokenizer, args.max_caption_len)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn, num_workers=0)
+    val_loss_loader = DataLoader(val_loss_ds, batch_size=args.eval_batch_size, shuffle=False, collate_fn=collate_fn, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=args.eval_batch_size, shuffle=False, collate_fn=collate_fn, num_workers=0)
     test_loader = DataLoader(test_ds, batch_size=args.eval_batch_size, shuffle=False, collate_fn=collate_fn, num_workers=0)
     scst_train_loader = DataLoader(train_ds, batch_size=args.scst_batch_size, shuffle=True, collate_fn=collate_fn, num_workers=0)
@@ -911,7 +1285,42 @@ def main() -> int:
     if args.init_from_checkpoint:
         checkpoint_path = Path(args.init_from_checkpoint).expanduser().resolve()
         print(f"Loading initial weights from: {checkpoint_path}")
-        init_payload = load_model_weights(model, checkpoint_path, device)
+        init_payload = load_model_weights(model, checkpoint_path, device, strict=not args.allow_partial_init)
+    transfer_anchor_summary = None
+    if args.transfer_adapter == "target_anchor_prefix":
+        if args.transfer_num_anchors <= 0:
+            raise ValueError("--transfer-num-anchors must be positive for target_anchor_prefix")
+        anchor_embeddings, anchor_target_map, transfer_anchor_summary = build_transfer_anchor_bank(
+            model=model,
+            tokenizer=tokenizer,
+            train_dataset=train_ds,
+            num_anchors=args.transfer_num_anchors,
+            max_caption_len=args.max_caption_len,
+            device=device,
+            num_iters=args.transfer_anchor_iters,
+            smoothing=args.transfer_anchor_smoothing,
+        )
+        model.set_transfer_anchor_bank(anchor_embeddings.to(device))
+        train_ds.set_anchor_target_map(anchor_target_map)
+        save_json(layout.run_dir / "transfer_anchor_summary.json", transfer_anchor_summary)
+        print(
+            "Transfer anchors:"
+            f" captions={transfer_anchor_summary['num_train_captions']} "
+            f"anchors={transfer_anchor_summary['num_anchors']} "
+            f"cluster_counts={transfer_anchor_summary['cluster_counts']}"
+        )
+    if args.transfer_train_only:
+        if args.transfer_adapter == "none":
+            raise ValueError("--transfer-train-only requires --transfer-adapter to be enabled")
+        if args.freeze_non_bart:
+            raise ValueError("--transfer-train-only cannot be combined with --freeze-non-bart")
+        freeze_for_transfer_adapter(
+            model,
+            train_lm_head=args.transfer_train_lm_head,
+            train_visual_projection=args.transfer_train_visual_proj,
+        )
+    if args.freeze_non_bart:
+        freeze_non_bart_parameters(model)
     total_params = sum(parameter.numel() for parameter in model.parameters())
     trainable_params = sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
     print(f"Parameters: {trainable_params:,} trainable / {total_params:,} total")
@@ -937,6 +1346,22 @@ def main() -> int:
         "max_visual_positions": args.max_visual_positions,
         "audio_summary_tokens": args.audio_summary_tokens,
         "feature_dropout": args.feature_dropout,
+        "max_audio_tokens": args.max_audio_tokens,
+        "transfer_adapter": args.transfer_adapter,
+        "transfer_num_anchors": args.transfer_num_anchors,
+        "transfer_num_tokens": args.transfer_num_tokens,
+        "transfer_bottleneck_dim": args.transfer_bottleneck_dim,
+        "transfer_dropout": args.transfer_dropout,
+        "transfer_gate_init": args.transfer_gate_init,
+        "transfer_residual_scale": args.transfer_residual_scale,
+        "transfer_anchor_temperature": args.transfer_anchor_temperature,
+        "transfer_anchor_smoothing": args.transfer_anchor_smoothing,
+        "transfer_anchor_iters": args.transfer_anchor_iters,
+        "transfer_anchor_aux_weight": args.transfer_anchor_aux_weight,
+        "transfer_train_only": args.transfer_train_only,
+        "transfer_train_lm_head": args.transfer_train_lm_head,
+        "transfer_train_visual_proj": args.transfer_train_visual_proj,
+        "transfer_anchor_summary": transfer_anchor_summary,
         "xe_epochs": args.xe_epochs,
         "scst_epochs": args.scst_epochs,
         "batch_size": args.batch_size,
@@ -966,7 +1391,11 @@ def main() -> int:
         "gradient_checkpointing": not args.disable_gradient_checkpointing,
         "seed": args.seed,
         "device": str(device),
+        "expand_train_captions": args.expand_train_captions,
+        "expand_val_loss_captions": args.expand_val_loss_captions,
+        "freeze_non_bart": args.freeze_non_bart,
         "train_size": len(train_ds),
+        "val_loss_size": len(val_loss_ds),
         "val_size": len(val_ds),
         "test_size": len(test_ds),
         "init_stage": init_payload.get("stage") if init_payload else None,
@@ -994,8 +1423,9 @@ def main() -> int:
             device,
             args.grad_clip,
             args.grad_accum_steps,
+            transfer_anchor_aux_weight=args.transfer_anchor_aux_weight,
         )
-        val_loss = evaluate_loss(model, val_loader, device)
+        val_loss = evaluate_loss(model, val_loss_loader, device)
         val_metrics, _ = evaluate_metrics(
             model=model,
             loader=val_loader,
@@ -1042,19 +1472,31 @@ def main() -> int:
             best_val_cider = val_cider
             torch.save(latest_payload, layout.run_dir / "best_cider_xe.pt")
 
-    best_xe_path = layout.run_dir / "best_cider_xe.pt"
-    best_xe_payload = torch.load(best_xe_path, map_location=device, weights_only=False)
-    model.load_state_dict(best_xe_payload["model"])
-    xe_test_metrics, xe_test_predictions = evaluate_metrics(
-        model=model,
-        loader=test_loader,
-        tokenizer=tokenizer,
-        device=device,
-        num_beams=args.test_num_beams,
-        max_new_tokens=args.max_caption_len,
-        length_penalty=args.test_length_penalty,
-        no_repeat_ngram_size=args.test_no_repeat_ngram_size,
-    )
+    def evaluate_named_checkpoint(checkpoint_name: str) -> tuple[dict, dict, dict]:
+        checkpoint_path = layout.run_dir / checkpoint_name
+        payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
+        model.load_state_dict(payload["model"])
+        metrics, predictions = evaluate_metrics(
+            model=model,
+            loader=test_loader,
+            tokenizer=tokenizer,
+            device=device,
+            num_beams=args.test_num_beams,
+            max_new_tokens=args.max_caption_len,
+            length_penalty=args.test_length_penalty,
+            no_repeat_ngram_size=args.test_no_repeat_ngram_size,
+        )
+        stem = checkpoint_name.replace(".pt", "")
+        save_json(layout.run_dir / f"test_metrics_{stem}.json", metrics)
+        save_json(layout.run_dir / f"test_predictions_{stem}.json", predictions)
+        return payload, metrics, predictions
+
+    best_loss_xe_payload, xe_test_metrics_best_loss, xe_test_predictions_best_loss = evaluate_named_checkpoint("best_loss_xe.pt")
+    best_xe_payload, xe_test_metrics_best_cider, xe_test_predictions_best_cider = evaluate_named_checkpoint("best_cider_xe.pt")
+
+    # Preserve the historical artifact names for downstream scripts.
+    xe_test_metrics = xe_test_metrics_best_cider
+    xe_test_predictions = xe_test_predictions_best_cider
     save_json(layout.run_dir / "test_metrics_xe.json", xe_test_metrics)
     save_json(layout.run_dir / "test_predictions_xe.json", xe_test_predictions)
     print(
@@ -1068,6 +1510,9 @@ def main() -> int:
             "best_val_loss": float(best_xe_payload.get("val_loss", best_val_loss)),
             "best_val_cider": float(best_xe_payload.get("val_metrics", {}).get("CIDEr", best_val_cider)),
             "test_metrics": xe_test_metrics,
+            "best_loss_epoch": int(best_loss_xe_payload["epoch"]),
+            "test_metrics_best_loss": xe_test_metrics_best_loss,
+            "test_metrics_best_cider": xe_test_metrics_best_cider,
         }
     }
 
@@ -1097,8 +1542,9 @@ def main() -> int:
                 grad_clip=args.scst_grad_clip,
                 xe_weight=args.scst_xe_weight,
                 grad_accum_steps=args.scst_grad_accum_steps,
+                transfer_anchor_aux_weight=args.transfer_anchor_aux_weight,
             )
-            val_loss = evaluate_loss(model, val_loader, device)
+            val_loss = evaluate_loss(model, val_loss_loader, device)
             val_metrics, _ = evaluate_metrics(
                 model=model,
                 loader=val_loader,

@@ -1,0 +1,13 @@
+{
+  "n_bootstrap": 10000,
+  "seed": 20260610,
+  "corpus_baseline_CIDEr": 0.13744177764881674,
+  "corpus_lvecr_CIDEr": 0.15210421290642032,
+  "paired_sentence_cider_diff": {
+    "mean": 0.014523736148446641,
+    "p2_5": -0.0005949872625068049,
+    "p50": 0.013356711488043252,
+    "p97_5": 0.03609363151849378
+  },
+  "interpretation": "The paired mean sentence-CIDEr gain is positive, but the 95% interval narrowly crosses zero."
+}

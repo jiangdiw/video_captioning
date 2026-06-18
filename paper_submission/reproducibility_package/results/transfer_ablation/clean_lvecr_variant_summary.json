@@ -1,0 +1,32 @@
+[
+  {
+    "variant": "Clean model-score baseline",
+    "METEOR": 0.2744,
+    "ROUGE_L": 0.3232,
+    "CIDEr": 0.1374
+  },
+  {
+    "variant": "LV-ECR, unconstrained grid",
+    "METEOR": 0.2725,
+    "ROUGE_L": 0.309,
+    "CIDEr": 0.1397
+  },
+  {
+    "variant": "LV-ECR, visual-positive",
+    "METEOR": 0.2741,
+    "ROUGE_L": 0.3122,
+    "CIDEr": 0.1443
+  },
+  {
+    "variant": "LV-ECR, visual+support+margin",
+    "METEOR": 0.2622,
+    "ROUGE_L": 0.3109,
+    "CIDEr": 0.1467
+  },
+  {
+    "variant": "LV-ECR, visual+support",
+    "METEOR": 0.2885,
+    "ROUGE_L": 0.3198,
+    "CIDEr": 0.1521
+  }
+]

@@ -1,0 +1,304 @@
+{
+  "split": "test",
+  "predictions_json": "<DATTALION_WORKSPACE>/runs_clean/transfer_arch_search_20260610/long_video_evidence_reranker_adaptive_visualsupport_nomargin_v2/test_predictions.json",
+  "baseline_rank_source": "model_score",
+  "n_bootstrap": 10000,
+  "seed": 20260610,
+  "note": "Bootstrap intervals use mean per-video sentence CIDEr from the local SplitCiderScorer; corpus-level COCO metrics are reported separately.",
+  "corpus_baseline_metrics": {
+    "Bleu_1": 0.5961538461509801,
+    "Bleu_2": 0.3324498519492491,
+    "Bleu_3": 0.173551965891537,
+    "Bleu_4": 1.4507803052124038e-05,
+    "METEOR": 0.27437552447689495,
+    "ROUGE_L": 0.32315263683684736,
+    "CIDEr": 0.13744177764881674
+  },
+  "corpus_method_metrics": {
+    "Bleu_1": 0.6008968609838525,
+    "Bleu_2": 0.3439640955873193,
+    "Bleu_3": 0.19986823066632892,
+    "Bleu_4": 0.10467727649473094,
+    "METEOR": 0.28852490162181393,
+    "ROUGE_L": 0.31982645321654607,
+    "CIDEr": 0.15210421290642032
+  },
+  "sentence_cider_baseline": {
+    "mean": 0.13610336424235436,
+    "p2_5": 0.0004533604025355302,
+    "p50": 0.10207768518771834,
+    "p97_5": 0.4257429085314859
+  },
+  "sentence_cider_method": {
+    "mean": 0.15058028896553138,
+    "p2_5": 0.0004533604025355302,
+    "p50": 0.11261261398566691,
+    "p97_5": 0.5152395409027584
+  },
+  "paired_sentence_cider_diff": {
+    "mean": 0.014476924723177046,
+    "p2_5": -0.02758976285269984,
+    "p50": 0.0,
+    "p97_5": 0.12777728073728584
+  },
+  "bootstrap_sentence_cider_baseline": {
+    "mean": 0.1361643476979257,
+    "p2_5": 0.0951998828831058,
+    "p50": 0.13443001558292206,
+    "p97_5": 0.18706788620630171
+  },
+  "bootstrap_sentence_cider_method": {
+    "mean": 0.15068808384637233,
+    "p2_5": 0.10404474512773168,
+    "p50": 0.14900289292841662,
+    "p97_5": 0.20579490176053877
+  },
+  "bootstrap_paired_sentence_cider_diff": {
+    "mean": 0.014523736148446641,
+    "p2_5": -0.0005949872625068049,
+    "p50": 0.013356711488043252,
+    "p97_5": 0.03609363151849378
+  },
+  "per_video": [
+    {
+      "video_id": "video10000",
+      "baseline_caption": "scene shows damage to buildings and damaged buildings",
+      "method_caption": "scene shows destruction and destruction as people repair damaged buildings",
+      "baseline_sentence_cider": 0.00420185547675716,
+      "method_sentence_cider": 0.0025894413415964964,
+      "diff": -0.0016124141351606634
+    },
+    {
+      "video_id": "video10001",
+      "baseline_caption": "construction workers work on the roof of a building",
+      "method_caption": "construction workers talk about broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.13112434452934443,
+      "method_sentence_cider": 0.11598281574805597,
+      "diff": -0.015141528781288466
+    },
+    {
+      "video_id": "video10002",
+      "baseline_caption": "soldiers walk past destroyed buildings",
+      "method_caption": "soldiers walk past destroyed buildings",
+      "baseline_sentence_cider": 0.09608463426013716,
+      "method_sentence_cider": 0.09608463426013716,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10003",
+      "baseline_caption": "construction crews remove debris from damaged buildings",
+      "method_caption": "construction workers remove debris from damaged buildings",
+      "baseline_sentence_cider": 0.07927594760269929,
+      "method_sentence_cider": 0.10924241222327784,
+      "diff": 0.029966464620578545
+    },
+    {
+      "video_id": "video10004",
+      "baseline_caption": "damaged buildings surrounded by rubble and debris",
+      "method_caption": "damaged buildings surrounded by broken glass and debris",
+      "baseline_sentence_cider": 0.04493196921900028,
+      "method_sentence_cider": 0.03443966500779005,
+      "diff": -0.01049230421121023
+    },
+    {
+      "video_id": "video10005",
+      "baseline_caption": "emergency workers remove debris from damaged building",
+      "method_caption": "construction workers remove debris from damaged building",
+      "baseline_sentence_cider": 0.008887953174245712,
+      "method_sentence_cider": 0.007542247619516757,
+      "diff": -0.0013457055547289555
+    },
+    {
+      "video_id": "video10006",
+      "baseline_caption": "firefighters use hose to clear debris",
+      "method_caption": "firefighters use fire hose to clear debris",
+      "baseline_sentence_cider": 0.0863730703049374,
+      "method_sentence_cider": 0.1337986046990569,
+      "diff": 0.047425534394119506
+    },
+    {
+      "video_id": "video10007",
+      "baseline_caption": "man and woman talk to each other",
+      "method_caption": "man and woman talk to each other",
+      "baseline_sentence_cider": 0.33912270013063717,
+      "method_sentence_cider": 0.33912270013063717,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10008",
+      "baseline_caption": "emergency workers remove debris from damaged building",
+      "method_caption": "emergency workers remove debris from damaged building",
+      "baseline_sentence_cider": 0.1080707361152995,
+      "method_sentence_cider": 0.1080707361152995,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10009",
+      "baseline_caption": "construction workers remove rubble from damaged building",
+      "method_caption": "construction workers remove rubble from damaged building",
+      "baseline_sentence_cider": 0.21250741506929194,
+      "method_sentence_cider": 0.21250741506929194,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10010",
+      "baseline_caption": "emergency workers remove debris from damaged building",
+      "method_caption": "emergency workers remove debris from damaged building",
+      "baseline_sentence_cider": 0.13047640705237257,
+      "method_sentence_cider": 0.13047640705237257,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10011",
+      "baseline_caption": "man walks through damaged building",
+      "method_caption": "man walks past damaged building with broken windows",
+      "baseline_sentence_cider": 0.04130234826054496,
+      "method_sentence_cider": 0.014931702801022984,
+      "diff": -0.02637064545952198
+    },
+    {
+      "video_id": "video10012",
+      "baseline_caption": "interior man talks with injured man and family",
+      "method_caption": "interior man talks with injured man and family",
+      "baseline_sentence_cider": 0.10906936010454205,
+      "method_sentence_cider": 0.10906936010454205,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10013",
+      "baseline_caption": "emergency teams respond to fire and smoke",
+      "method_caption": "firefighters use ladder to reach injured victims",
+      "baseline_sentence_cider": 0.16092741556873869,
+      "method_sentence_cider": 0.23722864160493867,
+      "diff": 0.07630122603619999
+    },
+    {
+      "video_id": "video10014",
+      "baseline_caption": "medical staff examine patient in hospital bed",
+      "method_caption": "medical staff examine patient in hospital bed",
+      "baseline_sentence_cider": 0.6541052761337252,
+      "method_sentence_cider": 0.6541052761337252,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10015",
+      "baseline_caption": "interior shows damaged walls and broken windows",
+      "method_caption": "damaged building with damaged walls and broken windows",
+      "baseline_sentence_cider": 0.19011597431835192,
+      "method_sentence_cider": 0.17596779223665543,
+      "diff": -0.014148182081696492
+    },
+    {
+      "video_id": "video10016",
+      "baseline_caption": "footage shows damaged buildings and debris",
+      "method_caption": "footage shows damaged buildings and debris",
+      "baseline_sentence_cider": 0.0006253246931524554,
+      "method_sentence_cider": 0.0006253246931524554,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10017",
+      "baseline_caption": "scene shows broken windows and damaged buildings",
+      "method_caption": "scene shows broken windows and damaged buildings",
+      "baseline_sentence_cider": 0.044304503014244837,
+      "method_sentence_cider": 0.044304503014244837,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10018",
+      "baseline_caption": "construction workers work to remove debris from sidewalk",
+      "method_caption": "construction workers work to remove debris from sidewalk",
+      "baseline_sentence_cider": 0.0,
+      "method_sentence_cider": 0.0,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10019",
+      "baseline_caption": "smoke billows from burning building",
+      "method_caption": "smoke billows from burning building",
+      "baseline_sentence_cider": 0.06602709983063743,
+      "method_sentence_cider": 0.06602709983063743,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10020",
+      "baseline_caption": "people talk about damaged buildings and debris",
+      "method_caption": "people talk about damaged buildings and debris",
+      "baseline_sentence_cider": 0.19661004933291248,
+      "method_sentence_cider": 0.19661004933291248,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10021",
+      "baseline_caption": "scene shows broken pavement and debris",
+      "method_caption": "damaged road shows broken pavement and debris",
+      "baseline_sentence_cider": 0.19907945149286943,
+      "method_sentence_cider": 0.46256633098756444,
+      "diff": 0.263486879494695
+    },
+    {
+      "video_id": "video10022",
+      "baseline_caption": "people talk about destruction and destruction",
+      "method_caption": "people talk about damaged buildings and damage",
+      "baseline_sentence_cider": 0.07426944921362787,
+      "method_sentence_cider": 0.10186456549710485,
+      "diff": 0.02759511628347698
+    },
+    {
+      "video_id": "video10023",
+      "baseline_caption": "people talk about damaged buildings and damage",
+      "method_caption": "people talk about damaged buildings and damage",
+      "baseline_sentence_cider": 0.21772657075915408,
+      "method_sentence_cider": 0.21772657075915408,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10024",
+      "baseline_caption": "smoke billows from destroyed building",
+      "method_caption": "smoke billows from damaged building as fire spreads",
+      "baseline_sentence_cider": 0.09249039825237655,
+      "method_sentence_cider": 0.08001154038265851,
+      "diff": -0.012478857869718044
+    },
+    {
+      "video_id": "video10025",
+      "baseline_caption": "man stands in front of damaged building with broken windows and debris",
+      "method_caption": "man stands in front of damaged building with broken windows and debris",
+      "baseline_sentence_cider": 0.19482520398542397,
+      "method_sentence_cider": 0.19482520398542397,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10026",
+      "baseline_caption": "soldiers walk through damaged building",
+      "method_caption": "soldiers walk through damaged building",
+      "baseline_sentence_cider": 0.2542890035350157,
+      "method_sentence_cider": 0.2542890035350157,
+      "diff": 0.0
+    },
+    {
+      "video_id": "video10027",
+      "baseline_caption": "fire and smoke billows from building",
+      "method_caption": "fire and smoke billows from burning building",
+      "baseline_sentence_cider": 0.2031255072343358,
+      "method_sentence_cider": 0.2294824899149797,
+      "diff": 0.026356982680643876
+    },
+    {
+      "video_id": "video10028",
+      "baseline_caption": "firefighters and firefighters work on the roof of a large building",
+      "method_caption": "firefighters and firefighters work on the roof of a building under heavy fire",
+      "baseline_sentence_cider": 0.0915454029381284,
+      "method_sentence_cider": 0.06074160332159602,
+      "diff": -0.030803799616532387
+    },
+    {
+      "video_id": "video10029",
+      "baseline_caption": "emergency personnel walk through damaged building",
+      "method_caption": "soldiers walk through damaged building",
+      "baseline_sentence_cider": 0.05160555566812647,
+      "method_sentence_cider": 0.12717453156358116,
+      "diff": 0.0755689758954547
+    }
+  ]
+}

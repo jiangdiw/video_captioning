@@ -9,6 +9,10 @@ This repo contains the MSR-VTT pipeline used for:
 - category-level evaluation
 - ablation runs
 
+For the current 2026 journal submission on low-resource Dattalion transfer and clean LV-ECR reranking, see:
+
+- [paper_submission/](./paper_submission/)
+
 If you want a single entrypoint that calls the scripts for you, use:
 
 - [full_pipeline.ipynb](./full_pipeline.ipynb)
@@ -74,7 +78,7 @@ python prepro_tascc_feats.py \
 ### 3. Split fused features into CLIP and DINOv2 stores
 
 ```bash
-python data/split_visual_embeddings.py --dataset-mode sybset --fused-dir datas/feats/tascc_fused
+python data/split_visual_embeddings.py --dataset-mode subset --fused-dir data/feats/tascc_fused
 ```
 
 ### 4. Extract audio and VGGish features

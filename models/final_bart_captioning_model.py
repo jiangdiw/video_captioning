@@ -3,6 +3,8 @@ import torch.nn as nn
 from transformers import BartForConditionalGeneration
 from transformers.modeling_outputs import BaseModelOutput
 
+from models.transfer_adapters import TargetAnchorConditionedResidualAdapter, TargetConditionedResidualAdapter
+
 
 def infer_audio_mask(audio_emb: torch.Tensor | None, audio_mask: torch.Tensor | None) -> torch.Tensor | None:
     if audio_emb is None:
@@ -143,6 +145,14 @@ class FinalBartCaptioningModel(nn.Module):
         audio_summary_tokens: int = 4,
         feature_dropout: float = 0.1,
         gradient_checkpointing: bool = True,
+        transfer_adapter: str = "none",
+        transfer_num_anchors: int = 0,
+        transfer_num_tokens: int = 4,
+        transfer_bottleneck_dim: int = 64,
+        transfer_dropout: float = 0.1,
+        transfer_gate_init: float = -4.0,
+        transfer_residual_scale: float = 1.0,
+        transfer_anchor_temperature: float = 0.08,
     ) -> None:
         super().__init__()
         self.use_dino = use_dino
@@ -169,6 +179,33 @@ class FinalBartCaptioningModel(nn.Module):
         self.input_norm = nn.LayerNorm(bart_dim)
         self.feature_dropout = nn.Dropout(feature_dropout)
         self.modality_type_embeddings = nn.Embedding(2, bart_dim)
+        self.transfer_adapter_name = transfer_adapter.lower()
+        if self.transfer_adapter_name == "none":
+            self.transfer_adapter = None
+        elif self.transfer_adapter_name == "target_residual_prefix":
+            self.transfer_adapter = TargetConditionedResidualAdapter(
+                d_model=bart_dim,
+                n_heads=n_heads,
+                num_prefix_tokens=transfer_num_tokens,
+                bottleneck_dim=transfer_bottleneck_dim,
+                dropout=transfer_dropout,
+                gate_init=transfer_gate_init,
+                residual_scale=transfer_residual_scale,
+            )
+        elif self.transfer_adapter_name == "target_anchor_prefix":
+            self.transfer_adapter = TargetAnchorConditionedResidualAdapter(
+                d_model=bart_dim,
+                n_heads=n_heads,
+                num_anchors=transfer_num_anchors,
+                num_prefix_tokens=transfer_num_tokens,
+                bottleneck_dim=transfer_bottleneck_dim,
+                dropout=transfer_dropout,
+                gate_init=transfer_gate_init,
+                residual_scale=transfer_residual_scale,
+                anchor_temperature=transfer_anchor_temperature,
+            )
+        else:
+            raise ValueError(f"Unsupported transfer_adapter: {transfer_adapter}")
 
         self._configure_decoder_tuning(
             decoder_train_mode=decoder_train_mode,
@@ -208,12 +245,18 @@ class FinalBartCaptioningModel(nn.Module):
             for parameter in layer.parameters():
                 parameter.requires_grad = True
 
+    def set_transfer_anchor_bank(self, anchor_embeddings: torch.Tensor) -> None:
+        if self.transfer_adapter is None or not hasattr(self.transfer_adapter, "set_anchor_embeddings"):
+            raise ValueError("The active transfer adapter does not accept an anchor bank")
+        self.transfer_adapter.set_anchor_embeddings(anchor_embeddings)
+
     def _encode(
         self,
         clip_emb: torch.Tensor,
         dino_emb: torch.Tensor | None,
         audio_emb: torch.Tensor | None,
         audio_mask: torch.Tensor | None,
+        transfer_anchor_targets: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         sequence, attention_mask, audio_summary_len = self.encoder(
             clip_emb,
@@ -230,6 +273,15 @@ class FinalBartCaptioningModel(nn.Module):
         if audio_summary_len > 0:
             token_type_ids[:, -audio_summary_len:] = 1
         encoder_hidden_states = encoder_hidden_states + self.modality_type_embeddings(token_type_ids)
+        if self.transfer_adapter is not None:
+            if isinstance(self.transfer_adapter, TargetAnchorConditionedResidualAdapter):
+                encoder_hidden_states, attention_mask = self.transfer_adapter(
+                    encoder_hidden_states,
+                    attention_mask,
+                    anchor_targets=transfer_anchor_targets,
+                )
+            else:
+                encoder_hidden_states, attention_mask = self.transfer_adapter(encoder_hidden_states, attention_mask)
         return encoder_hidden_states, attention_mask
 
     def forward(
@@ -240,8 +292,15 @@ class FinalBartCaptioningModel(nn.Module):
         audio_mask: torch.Tensor | None = None,
         decoder_input_ids: torch.Tensor | None = None,
         labels: torch.Tensor | None = None,
+        transfer_anchor_targets: torch.Tensor | None = None,
     ):
-        encoder_hidden_states, attention_mask = self._encode(clip_emb, dino_emb, audio_emb, audio_mask)
+        encoder_hidden_states, attention_mask = self._encode(
+            clip_emb,
+            dino_emb,
+            audio_emb,
+            audio_mask,
+            transfer_anchor_targets=transfer_anchor_targets,
+        )
         return self.bart(
             attention_mask=attention_mask,
             encoder_outputs=(encoder_hidden_states,),
@@ -256,10 +315,17 @@ class FinalBartCaptioningModel(nn.Module):
         dino_emb: torch.Tensor | None = None,
         audio_emb: torch.Tensor | None = None,
         audio_mask: torch.Tensor | None = None,
+        transfer_anchor_targets: torch.Tensor | None = None,
         max_new_tokens: int = 40,
         **kwargs,
     ) -> torch.Tensor:
-        encoder_hidden_states, attention_mask = self._encode(clip_emb, dino_emb, audio_emb, audio_mask)
+        encoder_hidden_states, attention_mask = self._encode(
+            clip_emb,
+            dino_emb,
+            audio_emb,
+            audio_mask,
+            transfer_anchor_targets=transfer_anchor_targets,
+        )
         return self.bart.generate(
             encoder_outputs=BaseModelOutput(last_hidden_state=encoder_hidden_states),
             attention_mask=attention_mask,

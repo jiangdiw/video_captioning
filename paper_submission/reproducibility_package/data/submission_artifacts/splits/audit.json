@@ -1,0 +1,17 @@
+{
+  "metadata_path": "<DATTALION_ASSETS>/MA499/twenty_caption_new_dattalion_videodatainfo.txt",
+  "split_template": "<DATTALION_WORKSPACE>/processed/splits.json",
+  "output_root": "<DATTALION_WORKSPACE>/processed_clean",
+  "clean_videos": 114,
+  "train_pool_count": 74,
+  "all_train_count": 84,
+  "val_count": 10,
+  "test_count": 30,
+  "dropped_missing_caption_videos": [
+    "video10106"
+  ],
+  "caption_count_distribution": {
+    "19": 6,
+    "20": 108
+  }
+}

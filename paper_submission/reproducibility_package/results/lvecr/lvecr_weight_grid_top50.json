@@ -1,0 +1,1002 @@
+[
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14643767426779794,
+    "num_dev_switches": 36,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14606469749897139,
+    "num_dev_switches": 53,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14558251133790306,
+    "num_dev_switches": 39,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14539702805332516,
+    "num_dev_switches": 37,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.2,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14538291082197433,
+    "num_dev_switches": 38,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 0.75,
+      "rank": 0.0,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14529939573901668,
+    "num_dev_switches": 70,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.0,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14528589052048058,
+    "num_dev_switches": 33,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.145201522484405,
+    "num_dev_switches": 52,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.0,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1451618840641918,
+    "num_dev_switches": 63,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1451058294939547,
+    "num_dev_switches": 36,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14504512427784869,
+    "num_dev_switches": 51,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14499004254065698,
+    "num_dev_switches": 39,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.02,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1449848619429781,
+    "num_dev_switches": 52,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.02,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1449848619429781,
+    "num_dev_switches": 52,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14494667466389594,
+    "num_dev_switches": 51,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.0,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14489938802401192,
+    "num_dev_switches": 51,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.2,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14489071289507954,
+    "num_dev_switches": 41,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1448816796098082,
+    "num_dev_switches": 59,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.5,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14486048782282893,
+    "num_dev_switches": 57,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14485437097919523,
+    "num_dev_switches": 39,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14484969115337534,
+    "num_dev_switches": 48,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.0,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14480152865354107,
+    "num_dev_switches": 64,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14471753528846426,
+    "num_dev_switches": 49,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.5,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1446902266524577,
+    "num_dev_switches": 55,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14468293287425,
+    "num_dev_switches": 49,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14464478825014643,
+    "num_dev_switches": 55,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14459745699487275,
+    "num_dev_switches": 52,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.0,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14458399203344388,
+    "num_dev_switches": 60,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.0,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14458399203344388,
+    "num_dev_switches": 60,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.0,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1445800979166436,
+    "num_dev_switches": 64,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14453411440396907,
+    "num_dev_switches": 51,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.05,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.2,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1445308678799108,
+    "num_dev_switches": 46,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.2,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1445051042768545,
+    "num_dev_switches": 40,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.05,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14447546357110372,
+    "num_dev_switches": 33,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.0,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.05,
+      "domain": 0.2,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14446925372459346,
+    "num_dev_switches": 52,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1444510527967457,
+    "num_dev_switches": 59,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 0.75,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14444686328819747,
+    "num_dev_switches": 59,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14444165098621595,
+    "num_dev_switches": 54,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.5,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14439881528925044,
+    "num_dev_switches": 57,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 0.75,
+      "rank": 0.0,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.144327470610903,
+    "num_dev_switches": 68,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.0,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1442971857737174,
+    "num_dev_switches": 61,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14427733647562313,
+    "num_dev_switches": 61,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14426169331202227,
+    "num_dev_switches": 57,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.02,
+      "visual": 1.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14423064759150628,
+    "num_dev_switches": 57,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 2.0,
+      "rank": 0.05,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.1,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14421757895837414,
+    "num_dev_switches": 32,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 1.0,
+      "support": 0.5,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14420830340870627,
+    "num_dev_switches": 55,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.0,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14420395870819053,
+    "num_dev_switches": 57,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.0,
+      "visual": 1.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.0,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14418595203108953,
+    "num_dev_switches": 55,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.5,
+      "rank": 0.02,
+      "visual": 0.5,
+      "support": 0.25,
+      "lexical": 0.2,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.14416879006326466,
+    "num_dev_switches": 52,
+    "source_counts": {
+      "bart": 84
+    }
+  },
+  {
+    "weights": {
+      "model": 1.25,
+      "rank": 0.02,
+      "visual": 2.0,
+      "support": 0.25,
+      "lexical": 0.1,
+      "domain": 0.05,
+      "source": 1.0,
+      "length": 0.05,
+      "repeat": 0.2,
+      "bad": 1.0,
+      "switch_margin": 0.0
+    },
+    "dev_mean_sentence_cider": 0.1441358481966468,
+    "num_dev_switches": 51,
+    "source_counts": {
+      "bart": 84
+    }
+  }
+]
