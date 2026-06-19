@@ -14,7 +14,9 @@ not on human-caption stand-ins. The intended workflow is:
    `scripts/beam_headroom_diagnostic.py`.
 2. Train the frozen Dattalion candidate selector with
    `scripts/train_frozen_learned_selector.py --msrvtt-beam-run-dir <beam_cache>`.
-3. Bootstrap held-out Dattalion differences with
+3. Train optional source-switch diagnostics with
+   `scripts/train_source_switch_gate.py`.
+4. Bootstrap held-out Dattalion differences with
    `scripts/bootstrap_dattalion_cis.py`.
 
 `scripts/run_full_msrvtt_beam_selector_pipeline.py` wraps the full workflow. It
@@ -50,6 +52,11 @@ Additional local attempts did not improve over Ridge:
   `0.2411` CIDEr in a fixed debug grid.
 - ExtraTrees generated-beam selector reached `0.2265` CIDEr with grouped-CV
   selection.
+- A learned source-switch gate was able to reach `0.2437` CIDEr when restricted
+  to evidence-summary candidates, but an all-source gate dropped to `0.1720`
+  because adaptive-BLIP false positives were too costly. A reproducible hybrid
+  diagnostic with high-specificity template priors reached `0.3271` CIDEr; this
+  remains far below the `0.5132` candidate-pool oracle.
 
 The full-source run used 56,079 generated beam candidates across all MSR-VTT
 train/val videos. It did not improve over the sampled-cache Ridge selector,
@@ -60,7 +67,8 @@ See `results/msrvtt_style_reference_rerun_summary.md` and
 `results/bootstrap_msrvtt_style_refs_v3_msrvtt_beam_selector.md` for the compact
 summary and sampled-cache bootstrap intervals. See
 `results/bootstrap_msrvtt_style_refs_v3_msrvtt_beam_full_selector.md` for the
-full-source bootstrap intervals.
+full-source bootstrap intervals, and `results/source_switch_gate_summary.md` for
+the source-switch gate diagnostic.
 
 ## Artifact Policy
 
