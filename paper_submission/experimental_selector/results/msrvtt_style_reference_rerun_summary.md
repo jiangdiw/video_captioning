@@ -41,6 +41,7 @@ cross-validation before the final test scoring pass.
 | MSR-VTT reference-proxy Ridge selector | 0.2585 | 0.0364 | `{'adaptive_blip': 2, 'bart': 28}` |
 | MSR-VTT generated-beam Ridge selector, dev-selected | 0.2464 | 0.0243 | `{'bart': 30}` |
 | MSR-VTT generated-beam Ridge selector, exploratory | 0.2593 | 0.0372 | `{'bart': 30}` |
+| MSR-VTT full-source generated-beam Ridge selector | 0.2357 | 0.0135 | `{'bart': 30}` |
 | LV-ECR rerun | 0.2395 | 0.0173 | `{'bart': 30}` |
 | Candidate-pool oracle | 0.5132 | 0.2910 | `{'adaptive_blip': 5, 'bart': 16, 'evidence_summary': 9}` |
 
@@ -55,6 +56,13 @@ MSR-VTT train/val videos. The pretraining weight chosen by dev out-of-fold CIDEr
 0.001, giving 0.2464 test CIDEr. The adjacent 0.0005 weight reaches 0.2593 test
 CIDEr, but that row should be treated as exploratory unless the weight is frozen
 before another held-out evaluation.
+
+The full-source generated-beam rerun used all 7,010 MSR-VTT train/val videos and
+56,079 generated candidates. It did not improve the selector: after scaling
+pretraining weights down for the larger source pool, the best full-source row was
+0.2357 CIDEr. This suggests that the sampled-source gain is not simply a data-scale
+effect; more source-domain beams can increase source-domain bias unless the
+pretraining weight is very small.
 
 ## Bootstrap Summary
 
@@ -79,6 +87,8 @@ For the frozen learned selectors under v3 references:
 | MSR-VTT generated-beam Ridge selector, dev-selected - LV-ECR rerun | 0.0070 | [-0.0561, 0.0784] |
 | MSR-VTT generated-beam Ridge selector, exploratory - clean baseline | 0.0372 | [-0.0225, 0.1061] |
 | MSR-VTT generated-beam Ridge selector, exploratory - LV-ECR rerun | 0.0198 | [-0.0368, 0.0860] |
+| MSR-VTT full-source generated-beam Ridge selector - clean baseline | 0.0135 | [-0.0498, 0.0837] |
+| MSR-VTT full-source generated-beam Ridge selector - LV-ECR rerun | -0.0038 | [-0.0731, 0.0719] |
 | LV-ECR rerun - clean baseline | 0.0173 | [-0.0374, 0.0733] |
 | Frozen Ridge selector - LV-ECR rerun | -0.0071 | [-0.0521, 0.0304] |
 | Candidate-pool oracle - MSR-VTT generated-beam Ridge selector, dev-selected | 0.2667 | [0.1672, 0.3826] |
@@ -115,6 +125,22 @@ Generated-beam pretraining sweep summary:
 
 Pairwise generated-beam selectors underperformed Ridge: weight 0.0005 reached
 0.2312 test CIDEr and weight 0.001 reached 0.2223.
+
+Full-source generated-beam pretraining sweep summary:
+
+| MSR-VTT generated videos | Generated candidates | Weight | Dev OOF CIDEr | Test CIDEr |
+| ---: | ---: | ---: | ---: | ---: |
+| 7010 | 56079 | 0.00005 | 0.1555 | 0.2302 |
+| 7010 | 56079 | 0.00010 | 0.1568 | 0.2194 |
+| 7010 | 56079 | 0.00025 | 0.1558 | 0.2120 |
+| 7010 | 56079 | 0.00050 | 0.1547 | 0.2357 |
+| 7010 | 56079 | 0.00100 | 0.1567 | 0.2148 |
+
+Two stronger-feature attempts also failed to close the oracle gap. Adding
+reference-free CLIP video-text compatibility features to the generated-beam Ridge
+selector reached 0.2411 CIDEr in a fixed debug grid. An ExtraTrees nonlinear
+selector with generated-beam pretraining reached 0.2265 CIDEr under grouped-CV
+selection.
 
 ## Interpretation
 

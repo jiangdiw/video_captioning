@@ -5,12 +5,14 @@ import contextlib
 import io
 import json
 import math
+import os
 import sys
 from collections import Counter
 from pathlib import Path
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import GroupKFold
@@ -80,8 +82,14 @@ EXTRA_FEATURES = [
     "consensus_to_baseline",
     "consensus_cross_source",
     "consensus_support_025",
+    "clip_video_mean",
+    "clip_video_max",
+    "clip_video_rel",
+    "clip_video_zscore",
+    "clip_video_rank_penalty",
 ]
 FEATURE_NAMES = BASE_FEATURES + EXTRA_FEATURES
+DEFAULT_CLIP_TEXT_MODEL = "openai/clip-vit-base-patch32"
 
 
 def parse_args() -> argparse.Namespace:
@@ -122,7 +130,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-blip-candidates", type=int, default=8)
     parser.add_argument("--n-splits", type=int, default=5)
     parser.add_argument("--seed", type=int, default=20260618)
-    parser.add_argument("--learner", choices=["ridge", "pairwise"], default="ridge")
+    parser.add_argument("--learner", choices=["ridge", "pairwise", "extra_trees"], default="ridge")
     parser.add_argument("--min-pair-delta", type=float, default=0.0)
     parser.add_argument("--msrvtt-pretrain-captions-root", default=str(DEFAULT_MSRVTT_CAPTIONS_ROOT))
     parser.add_argument(
@@ -154,6 +162,28 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated MSR-VTT beam splits to use for generated-candidate pretraining.",
     )
     parser.add_argument(
+        "--enable-clip-video-text-features",
+        action="store_true",
+        help=(
+            "Attach reference-free CLIP text/video compatibility features. This "
+            "uses cached 512-d CLIP visual features from fused .npy files and a "
+            "CLIP text encoder."
+        ),
+    )
+    parser.add_argument(
+        "--clip-feature-roots",
+        default="",
+        help=(
+            "Comma-separated roots containing fused CLIP/DINO .npy files. If "
+            "omitted with --enable-clip-video-text-features, known local "
+            "Dattalion and MSR-VTT fused-feature roots are searched."
+        ),
+    )
+    parser.add_argument("--clip-text-model-name", default=DEFAULT_CLIP_TEXT_MODEL)
+    parser.add_argument("--clip-feature-device", choices=["cpu", "cuda", "mps", "auto"], default="cpu")
+    parser.add_argument("--clip-text-batch-size", type=int, default=64)
+    parser.add_argument("--clip-progress-every", type=int, default=50)
+    parser.add_argument(
         "--alphas",
         default="0.01,0.03,0.1,0.3,1,3,10,30,100",
         help=(
@@ -182,6 +212,10 @@ def parse_csv_list(raw: str, name: str) -> list[str]:
     if not values:
         raise ValueError(f"{name} must contain at least one value")
     return values
+
+
+def parse_path_list(raw: str) -> list[Path]:
+    return [Path(item.strip()).expanduser().resolve() for item in raw.split(",") if item.strip()]
 
 
 def all_rows(candidates_by_video: dict[str, list[Candidate]], ids: list[str] | None = None) -> list[Candidate]:
@@ -252,6 +286,189 @@ def attach_consensus_features(
                     "consensus_support_025": float(np.sum(other_sims >= 0.25)) if other_indices else 0.0,
                 }
             )
+
+
+def resolved_video_id(video_id: str) -> str:
+    if "::" in video_id:
+        return video_id.split("::")[-1]
+    return video_id
+
+
+def choose_clip_device(device_arg: str):
+    import torch
+
+    if device_arg != "auto":
+        return torch.device(device_arg)
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
+def default_clip_feature_roots(workspace: Path) -> list[Path]:
+    candidates = [
+        workspace / "features" / "tascc_fused_adaptive120_all",
+        workspace / "features" / "tascc_fused",
+        workspace / "features" / "tascc_fused_test_adaptive80",
+        workspace / "features" / "tascc_fused_trainval_adaptive80",
+        Path("/Users/aglooney03/Video-Summarization/features/tascc_fused"),
+        Path("/Users/aglooney03/Video-Summarization/datas/feats/tascc_fused"),
+        Path(
+            "/Users/aglooney03/Library/CloudStorage/GoogleDrive-aidanlooney@g.harvard.edu/My Drive/"
+            "undergrad-research/video_captioning_project/Video-Summarization/datas/feats/tascc_fused"
+        ),
+    ]
+    existing: list[Path] = []
+    seen: set[Path] = set()
+    for path in candidates:
+        if not path.exists():
+            continue
+        resolved = path.expanduser().resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        existing.append(resolved)
+    return existing
+
+
+class ClipTextVideoScorer:
+    def __init__(
+        self,
+        feature_roots: list[Path],
+        model_name: str,
+        device_arg: str,
+        batch_size: int,
+    ) -> None:
+        if not feature_roots:
+            raise ValueError("CLIP video-text features requested but no feature roots are available.")
+        os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+        import torch
+        from transformers import CLIPModel, CLIPTokenizer
+
+        self.torch = torch
+        self.feature_roots = feature_roots
+        self.device = choose_clip_device(device_arg)
+        self.batch_size = batch_size
+        self.tokenizer = CLIPTokenizer.from_pretrained(model_name)
+        self.model = CLIPModel.from_pretrained(model_name).to(self.device)
+        self.model.eval()
+        self.text_cache: dict[str, np.ndarray] = {}
+        self.video_cache: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+
+    def find_feature_path(self, video_id: str) -> Path | None:
+        raw_id = resolved_video_id(video_id)
+        for root in self.feature_roots:
+            candidate = root / f"{raw_id}.npy"
+            if candidate.exists():
+                return candidate
+        return None
+
+    @staticmethod
+    def normalize_rows(matrix: np.ndarray) -> np.ndarray:
+        norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+        return np.divide(matrix, norms, out=np.zeros_like(matrix, dtype=float), where=norms > 0.0)
+
+    @staticmethod
+    def normalize_vector(vector: np.ndarray) -> np.ndarray:
+        norm = np.linalg.norm(vector)
+        if norm <= 0.0:
+            return np.zeros_like(vector, dtype=float)
+        return vector.astype(float) / float(norm)
+
+    def video_vectors(self, video_id: str) -> tuple[np.ndarray, np.ndarray] | None:
+        raw_id = resolved_video_id(video_id)
+        if raw_id in self.video_cache:
+            return self.video_cache[raw_id]
+        path = self.find_feature_path(video_id)
+        if path is None:
+            return None
+        arr = np.load(path)
+        if arr.ndim == 1:
+            clip = arr[:512].reshape(1, -1)
+        else:
+            clip = arr[:, :512]
+        frame_vectors = self.normalize_rows(np.asarray(clip, dtype=float))
+        mean_vector = self.normalize_vector(frame_vectors.mean(axis=0))
+        self.video_cache[raw_id] = (mean_vector, frame_vectors)
+        return self.video_cache[raw_id]
+
+    def encode_texts(self, captions: list[str]) -> np.ndarray:
+        missing = []
+        for caption in captions:
+            key = caption.lower()
+            if key not in self.text_cache:
+                missing.append(caption)
+        if missing:
+            import torch
+
+            for start in range(0, len(missing), self.batch_size):
+                batch = missing[start : start + self.batch_size]
+                encoded = self.tokenizer(batch, padding=True, truncation=True, return_tensors="pt").to(self.device)
+                with torch.no_grad():
+                    output = self.model.get_text_features(**encoded)
+                if hasattr(output, "pooler_output"):
+                    features = output.pooler_output
+                elif hasattr(output, "last_hidden_state"):
+                    features = output.last_hidden_state[:, 0, :]
+                else:
+                    features = output
+                features_np = features.detach().cpu().numpy().astype(float)
+                features_np = self.normalize_rows(features_np)
+                for caption, vector in zip(batch, features_np):
+                    self.text_cache[caption.lower()] = vector
+        return np.vstack([self.text_cache[caption.lower()] for caption in captions])
+
+
+def attach_clip_video_text_features(
+    candidates_by_video: dict[str, list[Candidate]],
+    baseline_by_video: dict[str, Candidate],
+    scorer: ClipTextVideoScorer,
+    label: str,
+    progress_every: int,
+) -> None:
+    attached = 0
+    missing = 0
+    for index, (video_id, rows) in enumerate(candidates_by_video.items(), start=1):
+        video_vectors = scorer.video_vectors(video_id)
+        if video_vectors is None:
+            missing += 1
+            continue
+        mean_vector, frame_vectors = video_vectors
+        captions = [row.caption for row in rows]
+        text_vectors = scorer.encode_texts(captions)
+        mean_scores = text_vectors @ mean_vector
+        frame_scores = text_vectors @ frame_vectors.T
+        max_scores = frame_scores.max(axis=1) if frame_scores.size else mean_scores
+        baseline_caption = baseline_by_video[video_id].caption
+        baseline_idx = next(
+            (idx for idx, row in enumerate(rows) if row.caption == baseline_caption),
+            0,
+        )
+        mean_center = float(np.mean(mean_scores))
+        mean_std = float(np.std(mean_scores))
+        ranks = np.argsort(np.argsort(-mean_scores))
+        for idx, row in enumerate(rows):
+            row.features.update(
+                {
+                    "clip_video_mean": float(mean_scores[idx]),
+                    "clip_video_max": float(max_scores[idx]),
+                    "clip_video_rel": float(mean_scores[idx] - mean_scores[baseline_idx]),
+                    "clip_video_zscore": float((mean_scores[idx] - mean_center) / mean_std) if mean_std > 1e-12 else 0.0,
+                    "clip_video_rank_penalty": -float(ranks[idx]),
+                }
+            )
+        attached += 1
+        if progress_every > 0 and index % progress_every == 0:
+            print(
+                f"[clip_features:{label}] processed={index} attached={attached} missing={missing}",
+                flush=True,
+            )
+    if progress_every > 0:
+        print(
+            f"[clip_features:{label}] done processed={len(candidates_by_video)} attached={attached} missing={missing}",
+            flush=True,
+        )
 
 
 def feature_matrix(rows: list[Candidate]) -> np.ndarray:
@@ -339,6 +556,38 @@ class PairwiseRanker:
         return x_scaled @ self.model.coef_.reshape(-1)
 
 
+class ExtraTreesRanker:
+    def __init__(self, alpha: float, seed: int) -> None:
+        min_samples_leaf = int(max(1, round(alpha)))
+        self.model = ExtraTreesRegressor(
+            n_estimators=600,
+            min_samples_leaf=min_samples_leaf,
+            max_features=0.8,
+            bootstrap=False,
+            random_state=seed,
+            n_jobs=-1,
+        )
+
+    def fit(
+        self,
+        rows: list[Candidate],
+        pretrain_rows: list[Candidate] | None = None,
+        pretrain_weight: float = 0.0,
+    ) -> "ExtraTreesRanker":
+        training_rows = list(rows)
+        weights = [1.0 for _ in training_rows]
+        if pretrain_rows and pretrain_weight > 0.0:
+            training_rows.extend(pretrain_rows)
+            weights.extend([float(pretrain_weight) for _ in pretrain_rows])
+        x_raw = feature_matrix(training_rows)
+        y = np.array([row.sentence_cider for row in training_rows], dtype=float)
+        self.model.fit(x_raw, y, sample_weight=np.array(weights, dtype=float))
+        return self
+
+    def predict(self, x_raw: np.ndarray) -> np.ndarray:
+        return self.model.predict(x_raw)
+
+
 def build_pairwise_examples(
     rows: list[Candidate],
     x_scaled: np.ndarray,
@@ -384,6 +633,12 @@ def train_model(
     pretrain_rows: list[Candidate] | None = None,
     pretrain_weight: float = 0.0,
 ):
+    if learner == "extra_trees":
+        return ExtraTreesRanker(alpha=alpha, seed=seed).fit(
+            rows,
+            pretrain_rows=pretrain_rows,
+            pretrain_weight=pretrain_weight,
+        )
     if learner == "pairwise":
         return PairwiseRanker(alpha=alpha, min_pair_delta=min_pair_delta, seed=seed).fit(
             rows,
@@ -483,15 +738,19 @@ def score_rows_quiet(rows: list[Candidate]) -> dict[str, float]:
 
 
 def coefficient_summary(model) -> list[dict[str, float | str]]:
-    if isinstance(model, PairwiseRanker):
+    coefficient_name = "standardized_coefficient"
+    if isinstance(model, ExtraTreesRanker):
+        coefs = model.model.feature_importances_
+        coefficient_name = "feature_importance"
+    elif isinstance(model, PairwiseRanker):
         coefs = model.model.coef_.reshape(-1)
     else:
         coefs = model.model.coef_
     rows = [
-        {"feature": name, "standardized_coefficient": float(coef)}
+        {"feature": name, coefficient_name: float(coef)}
         for name, coef in zip(FEATURE_NAMES, coefs)
     ]
-    rows.sort(key=lambda item: abs(float(item["standardized_coefficient"])), reverse=True)
+    rows.sort(key=lambda item: abs(float(item[coefficient_name])), reverse=True)
     return rows
 
 
@@ -500,6 +759,8 @@ def write_markdown(output_dir: Path, summary: dict) -> None:
     learner_description = (
         "a pairwise logistic ranker over within-video candidate comparisons"
         if learner == "pairwise"
+        else "an ExtraTrees regressor to predict sentence-level CIDEr"
+        if learner == "extra_trees"
         else "a Ridge model to predict sentence-level CIDEr"
     )
     lines = [
@@ -855,6 +1116,36 @@ def main() -> None:
         attach_consensus_features(candidates_by_split[split], baseline_by_split[split], consensus_vectorizer)
     if pretrain_candidates:
         attach_consensus_features(pretrain_candidates, pretrain_baseline, consensus_vectorizer)
+
+    clip_feature_roots: list[Path] = []
+    if args.enable_clip_video_text_features:
+        clip_feature_roots = (
+            parse_path_list(args.clip_feature_roots)
+            if args.clip_feature_roots.strip()
+            else default_clip_feature_roots(workspace)
+        )
+        clip_scorer = ClipTextVideoScorer(
+            feature_roots=clip_feature_roots,
+            model_name=args.clip_text_model_name,
+            device_arg=args.clip_feature_device,
+            batch_size=args.clip_text_batch_size,
+        )
+        for split in ["train", "val", "test"]:
+            attach_clip_video_text_features(
+                candidates_by_split[split],
+                baseline_by_split[split],
+                clip_scorer,
+                label=f"dattalion_{split}",
+                progress_every=args.clip_progress_every,
+            )
+        if pretrain_candidates:
+            attach_clip_video_text_features(
+                pretrain_candidates,
+                pretrain_baseline,
+                clip_scorer,
+                label="msrvtt_pretrain",
+                progress_every=args.clip_progress_every,
+            )
     pretrain_rows = all_rows(pretrain_candidates) if pretrain_candidates else []
 
     alphas = parse_float_list(args.alphas, "--alphas")
@@ -970,6 +1261,9 @@ def main() -> None:
         "workspace_root": str(workspace),
         "refs_root": str(captions_root),
         "refs_filename_template": args.refs_filename_template,
+        "clip_video_text_features_enabled": bool(args.enable_clip_video_text_features),
+        "clip_text_model_name": args.clip_text_model_name if args.enable_clip_video_text_features else None,
+        "clip_feature_roots": [str(path) for path in clip_feature_roots],
         "candidate_sources": args.candidate_sources,
         "max_blip_candidates": args.max_blip_candidates,
         "dev_splits": dev_splits,

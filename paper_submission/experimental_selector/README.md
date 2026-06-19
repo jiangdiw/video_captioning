@@ -17,9 +17,15 @@ not on human-caption stand-ins. The intended workflow is:
 3. Bootstrap held-out Dattalion differences with
    `scripts/bootstrap_dattalion_cis.py`.
 
-The local run used a sampled cache of 750 MSR-VTT videos, 500 train and 250 val,
-with beam-8/return-8 candidates from
-`outputs/final_bart_full_tuned_continue_v3/best_cider_xe.pt`.
+`scripts/run_full_msrvtt_beam_selector_pipeline.py` wraps the full workflow. It
+can also prepend a fresh `train_final_bart.py` command via
+`--train-captioner-command`, then use the resulting checkpoint for full train/val
+beam generation.
+
+The local runs used beam-8/return-8 candidates from
+`outputs/final_bart_full_tuned_continue_v3/best_cider_xe.pt`, first on a sampled
+cache of 750 MSR-VTT videos and then on the full 7,010-video MSR-VTT train/val
+source cache.
 
 ## Current Local Result
 
@@ -32,14 +38,29 @@ Under the v3 MSR-VTT-style Dattalion references:
 | LV-ECR rerun | 0.2395 | 0.0173 |
 | MSR-VTT generated-beam Ridge selector, dev-selected | 0.2464 | 0.0243 |
 | MSR-VTT generated-beam Ridge selector, exploratory | 0.2593 | 0.0372 |
+| Full-source MSR-VTT generated-beam Ridge selector | 0.2357 | 0.0135 |
 
 The dev-selected generated-beam row used pretraining weight `0.001`, selected by
 development out-of-fold CIDEr. The stronger `0.0005` row should be treated as
 exploratory because it was not the dev-selected weight.
 
+Additional local attempts did not improve over Ridge:
+
+- CLIP video-text compatibility features with generated-beam pretraining reached
+  `0.2411` CIDEr in a fixed debug grid.
+- ExtraTrees generated-beam selector reached `0.2265` CIDEr with grouped-CV
+  selection.
+
+The full-source run used 56,079 generated beam candidates across all MSR-VTT
+train/val videos. It did not improve over the sampled-cache Ridge selector,
+suggesting that the remaining gap to the candidate-pool oracle is not solved by
+source-scale selector pretraining alone.
+
 See `results/msrvtt_style_reference_rerun_summary.md` and
 `results/bootstrap_msrvtt_style_refs_v3_msrvtt_beam_selector.md` for the compact
-summary and bootstrap intervals.
+summary and sampled-cache bootstrap intervals. See
+`results/bootstrap_msrvtt_style_refs_v3_msrvtt_beam_full_selector.md` for the
+full-source bootstrap intervals.
 
 ## Artifact Policy
 
