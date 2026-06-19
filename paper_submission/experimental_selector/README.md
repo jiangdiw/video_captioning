@@ -16,7 +16,9 @@ not on human-caption stand-ins. The intended workflow is:
    `scripts/train_frozen_learned_selector.py --msrvtt-beam-run-dir <beam_cache>`.
 3. Train optional source-switch diagnostics with
    `scripts/train_source_switch_gate.py`.
-4. Bootstrap held-out Dattalion differences with
+4. Apply high-specificity cross-proposal source verification with
+   `scripts/run_cross_proposal_verifier.py`.
+5. Bootstrap held-out Dattalion differences with
    `scripts/bootstrap_dattalion_cis.py`.
 
 `scripts/run_full_msrvtt_beam_selector_pipeline.py` wraps the full workflow. It
@@ -41,12 +43,14 @@ Under the v3 MSR-VTT-style Dattalion references:
 | MSR-VTT generated-beam Ridge selector, dev-selected | 0.2464 | 0.0243 |
 | MSR-VTT generated-beam Ridge selector, exploratory | 0.2593 | 0.0372 |
 | Full-source MSR-VTT generated-beam Ridge selector | 0.2357 | 0.0135 |
+| Cross-proposal verified source switcher | 0.3732 | 0.1511 |
 
 The dev-selected generated-beam row used pretraining weight `0.001`, selected by
 development out-of-fold CIDEr. The stronger `0.0005` row should be treated as
 exploratory because it was not the dev-selected weight.
 
-Additional local attempts did not improve over Ridge:
+Additional local attempts before the cross-proposal verifier did not improve
+over Ridge:
 
 - CLIP video-text compatibility features with generated-beam pretraining reached
   `0.2411` CIDEr in a fixed debug grid.
@@ -57,6 +61,11 @@ Additional local attempts did not improve over Ridge:
   because adaptive-BLIP false positives were too costly. A reproducible hybrid
   diagnostic with high-specificity template priors reached `0.3271` CIDEr; this
   remains far below the `0.5132` candidate-pool oracle.
+- A cross-proposal verifier on top of the exploratory `0.0005` BART-selector
+  anchor reached `0.3732` CIDEr by admitting only high-specificity switches
+  supported by adaptive/base/large BLIP keyframe proposal streams. Its
+  candidate-pool oracle is `0.5267` CIDEr, so it closes a meaningful part of
+  the prior source-switch gap while still leaving headroom.
 
 The full-source run used 56,079 generated beam candidates across all MSR-VTT
 train/val videos. It did not improve over the sampled-cache Ridge selector,
@@ -67,8 +76,9 @@ See `results/msrvtt_style_reference_rerun_summary.md` and
 `results/bootstrap_msrvtt_style_refs_v3_msrvtt_beam_selector.md` for the compact
 summary and sampled-cache bootstrap intervals. See
 `results/bootstrap_msrvtt_style_refs_v3_msrvtt_beam_full_selector.md` for the
-full-source bootstrap intervals, and `results/source_switch_gate_summary.md` for
-the source-switch gate diagnostic.
+full-source bootstrap intervals, `results/source_switch_gate_summary.md` for
+the source-switch gate diagnostic, and
+`results/cross_proposal_verifier_summary.md` for the cross-proposal verifier.
 
 ## Artifact Policy
 
